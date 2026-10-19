@@ -1,0 +1,15 @@
+@import "tailwindcss";
+@import "@heroui/styles";
+
+@import "./theme.css";
+@import "./components/card-content.css";
+@import "./components/edge-light.css";
+
+@layer base {
+  html,
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-geist), var(--font-thai), var(--font-japanese), "sans-serif";
+    text-rendering: optimizeLegibility;
+  }
+}

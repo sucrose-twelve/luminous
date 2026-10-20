@@ -6,40 +6,6 @@ import { SEASONALS, type Seasonal } from "@/constants"
 import { type AUDIOS, type ORDERS, type SORTS } from "./validator.zod"
 
 /**
- * Number of the last page; at least 1, so an empty result still has one page.
- */
-export function lastPageOf(count: number, take: number) {
-  return Math.max(1, Math.ceil(count / take))
-}
-
-/**
- * Wraps one page of rows with the numbers the pager needs.
- *
- * @param data - Rows of the current page
- * @param count - Total rows across all pages
- * @param currentPage - Page the rows belong to (already clamped to `1 … lastPage`)
- * @param take - Page size
- */
-export function toPagination<T>(
-  data: T[],
-  count: number,
-  currentPage: number,
-  take: number
-): Pagination<T> {
-  const lastPage = lastPageOf(count, take)
-
-  return {
-    data,
-    count,
-    take,
-    currentPage,
-    nextPage: currentPage < lastPage ? currentPage + 1 : null,
-    prevPage: currentPage > 1 ? currentPage - 1 : null,
-    lastPage
-  }
-}
-
-/**
  * Pairs every known option with its count from a `group by` query, `0` when the query has no row for it.
  *
  * @param values - All options in display order, e.g. `KINDS`
@@ -92,14 +58,6 @@ export function escapeLike(text: string) {
   return text.replace(/[\\%_]/g, "\\$&")
 }
 
-export const KIND_LABELS: Record<Content.Kind, string> = {
-  movie: "Movie",
-  anime_series: "Anime",
-  tv_series: "TV Series",
-  series: "Series",
-  shows: "Shows"
-}
-
 export const AUDIO_LABELS: Record<(typeof AUDIOS)[number], string> = {
   ja: "Japanese",
   en: "English",
@@ -137,26 +95,5 @@ export function sortOptionOf({
   return (
     SORT_OPTIONS.find((option) => option.sort === sortBy && option.order === order) ??
     null
-  )
-}
-
-/**
- * The page numbers the pager shows: the first two, the current page ±1, and the last two, with `"ellipsis"`
- * wherever pages are skipped.
- *
- * @example
- * ```ts
- * pageNumbers(10, 20) // [1, 2, "ellipsis", 9, 10, 11, "ellipsis", 19, 20]
- * pageNumbers(2, 5) // [1, 2, 3, 4, 5]
- * ```
- */
-export function pageNumbers(current: number, last: number) {
-  const pages = new Set([1, 2, current - 1, current, current + 1, last - 1, last])
-  const sorted = [...pages]
-    .filter((page) => page >= 1 && page <= last)
-    .toSorted((a, b) => a - b)
-
-  return sorted.flatMap((page, index): (number | "ellipsis")[] =>
-    index > 0 && page - sorted[index - 1] > 1 ? ["ellipsis", page] : [page]
   )
 }

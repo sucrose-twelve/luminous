@@ -1,4 +1,3 @@
-import { genres } from "@/constants/data/genres"
 import { seasonName } from "@/libs/season"
 
 /**
@@ -27,15 +26,6 @@ export const SEASON_KIND_CHIP_CLASSES: Record<Content.SeasonKind, string> = {
   movie: "bg-blue-500 text-blue-50",
   special: "bg-orange-500 text-orange-50",
   spinoff: "bg-indigo-500 text-indigo-50"
-}
-
-const GENRE_TEXTS = new Map(genres.map((genre) => [genre.slug, genre.text]))
-
-/**
- * A genre's display text, e.g. `Action (ต่อสู้)`; an unknown slug shows as is.
- */
-export function genreText(slug: string) {
-  return GENRE_TEXTS.get(slug) ?? slug
 }
 
 /**

@@ -1,12 +1,14 @@
 "use client"
 
 import { Avatar, Button, Dropdown, Label, Separator, type Key } from "@heroui/react"
-import { Logout01Icon } from "@hugeicons/core-free-icons"
+import { Clock01Icon, Logout01Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import Image from "next/image"
+import { useRouter } from "next/navigation"
 import { useCallback, useTransition } from "react"
 
 import { signOut } from "@/actions/auth/sign-out"
+import { useLoader } from "@/hooks"
 
 export type HeaderAccount = {
   email: string
@@ -15,20 +17,30 @@ export type HeaderAccount = {
 }
 
 /**
- * The signed-in visitor's avatar (their initials) and its menu: who is signed in, and Sign out. `signOut`
- * redirects home, so the item only needs to stay disabled while it runs.
+ * The signed-in visitor's avatar (their initials) and its menu: who is signed in, Watch History, and Sign out.
+ * `signOut` redirects home, so the item only needs to stay disabled while it runs.
  */
 export function AccountMenu({ account }: Readonly<{ account: HeaderAccount }>) {
+  const router = useRouter()
+  const loader = useLoader()
   const [isPending, startTransition] = useTransition()
   const initials = account.displayName.slice(0, 2).toUpperCase()
 
-  const handleAction = useCallback((key: Key) => {
-    if (key !== "sign-out") return
+  const handleAction = useCallback(
+    (key: Key) => {
+      if (key === "watch-history") {
+        loader.on()
+        router.push("/watch-histories")
+        return
+      }
+      if (key !== "sign-out") return
 
-    startTransition(async () => {
-      await signOut()
-    })
-  }, [])
+      startTransition(async () => {
+        await signOut()
+      })
+    },
+    [loader, router]
+  )
 
   return (
     <Dropdown>
@@ -63,6 +75,10 @@ export function AccountMenu({ account }: Readonly<{ account: HeaderAccount }>) {
           aria-label='Account'
           disabledKeys={isPending ? ["sign-out"] : []}
           onAction={handleAction}>
+          <Dropdown.Item id='watch-history' textValue='Watch History'>
+            <HugeiconsIcon icon={Clock01Icon} size={18} strokeWidth={1.8} />
+            <Label>Watch History</Label>
+          </Dropdown.Item>
           <Dropdown.Item id='sign-out' textValue='Sign out' variant='danger'>
             <HugeiconsIcon icon={Logout01Icon} size={18} strokeWidth={1.8} />
             <Label>{isPending ? "Signing out…" : "Sign out"}</Label>

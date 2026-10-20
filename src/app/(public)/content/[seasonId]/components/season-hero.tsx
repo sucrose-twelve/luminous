@@ -2,10 +2,11 @@ import { Chip } from "@heroui/react"
 import Image from "next/image"
 
 import { SOURCE_LABELS, STATUS_LABELS } from "@/constants/labels"
+import { genreText } from "@/libs/genre"
 import { airedLabel } from "@/libs/season"
 
 import type { SeasonDetail } from "../actions/read"
-import { genreText, KIND_FULL_LABELS, seasonTitle } from "../utils"
+import { KIND_FULL_LABELS, seasonTitle } from "../utils"
 
 /**
  * The top of the page: the season's poster (the page's only preloaded image), genre chips, full title, the

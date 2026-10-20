@@ -14,11 +14,16 @@ import { useCallback, useMemo, useState } from "react"
 
 import { DrawerComponent } from "@/components/ui/drawer"
 import { ContentFooter, ContentHeader } from "@/components/ui/shared"
-import { SEASONAL_LABELS, SOURCE_LABELS, STATUS_LABELS } from "@/constants/labels"
+import {
+  KIND_LABELS,
+  SEASONAL_LABELS,
+  SOURCE_LABELS,
+  STATUS_LABELS
+} from "@/constants/labels"
 
 import type { BrowseFilters } from "../actions/read-filters"
 import { useBrowseQuery, type BrowseQuery } from "../hooks/use-browse-query"
-import { AUDIO_LABELS, KIND_LABELS } from "../utils"
+import { AUDIO_LABELS } from "../utils"
 
 type Draft = Pick<
   BrowseQuery,

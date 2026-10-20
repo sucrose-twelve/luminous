@@ -4,10 +4,10 @@ import { Chip } from "@heroui/react"
 import { motion } from "framer-motion"
 import Image from "next/image"
 
+import { KIND_LABELS } from "@/constants/labels"
 import { seasonName } from "@/libs/season"
 
 import type { BrowseItem } from "../actions/read"
-import { KIND_LABELS } from "../utils"
 import { WatchLink } from "./watch-link"
 
 /**

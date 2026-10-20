@@ -3,8 +3,9 @@
 import { clamp } from "es-toolkit"
 import { useCallback, useEffect, useRef, type RefObject } from "react"
 
+import { formatSpokenTime } from "@/libs/time"
+
 import type { LmpActions } from "../types"
-import { formatSpokenTime } from "../utils"
 import { PreviewThumbnail, type PreviewThumbnailHandle } from "./preview-thumbnail"
 
 const BUFFER_EVENTS = [

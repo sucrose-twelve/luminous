@@ -14,6 +14,14 @@ export const SOURCE_LABELS: Record<Content.Source, string> = {
   "web_novel": "Web Novel"
 }
 
+export const KIND_LABELS: Record<Content.Kind, string> = {
+  movie: "Movie",
+  anime_series: "Anime",
+  tv_series: "TV Series",
+  series: "Series",
+  shows: "Shows"
+}
+
 export const STATUS_LABELS: Record<Content.SeasonStatus, string> = {
   upcoming: "Upcoming",
   airing: "Currently Airing",

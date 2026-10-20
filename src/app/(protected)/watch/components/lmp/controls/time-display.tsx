@@ -2,8 +2,9 @@
 
 import type { RefObject } from "react"
 
+import { formatTime } from "@/libs/time"
+
 import { useVideoEvent } from "../hooks/use-video-event"
-import { formatTime } from "../utils"
 
 const TIME_EVENTS = [
   "timeupdate",

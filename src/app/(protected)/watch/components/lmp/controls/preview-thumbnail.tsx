@@ -2,7 +2,9 @@
 
 import { useImperativeHandle, useRef } from "react"
 
-import { formatTime, spriteTile } from "../utils"
+import { formatTime } from "@/libs/time"
+
+import { spriteTile } from "../utils"
 
 const SKIP_LABELS: Record<Content.Skip["kind"], string> = {
   intro: "Intro",

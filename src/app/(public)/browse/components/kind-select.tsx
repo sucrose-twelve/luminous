@@ -3,9 +3,10 @@
 import { ListBox, Select, type Key } from "@heroui/react"
 import { useCallback } from "react"
 
+import { KIND_LABELS } from "@/constants/labels"
+
 import type { BrowseFilters } from "../actions/read-filters"
 import { useBrowseQuery } from "../hooks/use-browse-query"
-import { KIND_LABELS } from "../utils"
 
 const ALL = "all"
 

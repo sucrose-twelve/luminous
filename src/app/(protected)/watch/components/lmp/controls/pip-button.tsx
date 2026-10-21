@@ -1,12 +1,10 @@
-import {
-  PictureInPictureExitIcon,
-  PictureInPictureOnIcon
-} from "@hugeicons/core-free-icons"
+import { PictureInPictureIcon } from "@/components/icons"
 
 import { ControlButton } from "./control-button"
 
 /**
- * Hidden where the browser can't open Picture-in-Picture from a page (Firefox).
+ * One icon both ways; the label says which. Hidden where the browser can't open Picture-in-Picture from a
+ * page (Firefox).
  */
 export function PipButton({
   isSupported,
@@ -20,8 +18,8 @@ export function PipButton({
       label={
         isActive ? "Exit picture-in-picture (Shift+I)" : "Picture-in-picture (Shift+I)"
       }
-      icon={isActive ? PictureInPictureExitIcon : PictureInPictureOnIcon}
-      onPress={onToggle}
-    />
+      onPress={onToggle}>
+      <PictureInPictureIcon />
+    </ControlButton>
   )
 }

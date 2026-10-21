@@ -1,67 +1,76 @@
-"use client"
-
-import { Button, Tooltip } from "@heroui/react"
-import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react"
-
 import { cls } from "@/libs/utils"
 
+const SIZES = {
+  sm: "size-9 sm:size-11 lg:size-12 [&_svg]:size-5 sm:[&_svg]:size-6",
+  md: "size-12 sm:size-16 [&_svg]:size-6 sm:[&_svg]:size-8",
+  lg: "size-14 sm:size-22 [&_svg]:size-8 sm:[&_svg]:size-10"
+} as const
+
+export type ControlSize = keyof typeof SIZES
+
 /**
- * An icon-only player button (HeroUI `Button`) with a 44 px hit area and a tooltip.
+ * Classes of a round player control (`docs/design/LMP.png`): a dark translucent, blurred disc with the
+ * `border-gradient` edge, lighter on hover and keyboard focus. `sm` is the top bar, `md` the seek and
+ * episode buttons, `lg` Play. Also styles the top bar's Back link.
+ */
+export function controlClass(size: ControlSize) {
+  return cls(
+    "border-gradient grid shrink-0 cursor-pointer place-items-center rounded-full",
+    "bg-black/20 text-white backdrop-blur-xl",
+    "transition-[background-color,scale] duration-150 select-none",
+    "hover:bg-black/15 focus-visible:bg-white/15 active:scale-98",
+    "aria-disabled:cursor-not-allowed aria-disabled:opacity-40 aria-disabled:hover:bg-black/40 aria-disabled:active:scale-100",
+    SIZES[size]
+  )
+}
+
+/**
+ * An icon-only player button with a tooltip (`title`).
  *
- * A disabled button stays focusable and hoverable (`aria-disabled`, not `isDisabled`) so its label and tooltip
- * can still be read. Inside a HeroUI `Dropdown` it becomes the menu's trigger, which sets its `aria-haspopup` /
- * `aria-expanded` itself.
- *
- * The icon's size is set inline: HeroUI sizes every `svg` in a button from CSS, which would override `size`.
+ * A disabled button stays focusable and hoverable (`aria-disabled`, not `disabled`) so its label and tooltip
+ * can still be read.
  *
  * @param label - `aria-label`, naming the shortcut: `"Mute (Shift+M)"`
  * @param title - Tooltip, when it should say more than `label`
- * @param panel - Makes it the toggle of a panel that isn't a menu (the playlist): `id` of the panel and
- * whether it's open
+ * @param panel - Makes it the toggle of a popup (the Preferences menu, a drawer): `id` of the popup and
+ * whether it's open, for `aria-expanded` / `aria-controls`. `data-panel` names the popup even while closed, so
+ * the popup can hand focus back to its toggle
+ * @param children - The icon
  */
 export function ControlButton({
+  ref,
   label,
   title,
-  icon,
-  iconSize = 26,
+  size = "sm",
   isDisabled = false,
   panel,
   onPress,
-  className
+  className,
+  children
 }: Readonly<{
+  ref?: React.Ref<HTMLButtonElement>
   label: string
   title?: string
-  icon: IconSvgElement
-  iconSize?: number
+  size?: ControlSize
   isDisabled?: boolean
   panel?: { id: string; isOpen: boolean }
   onPress?: () => void
   className?: string
+  children: React.ReactNode
 }>) {
   return (
-    <Tooltip delay={500}>
-      <Button
-        isIconOnly
-        variant='ghost'
-        aria-label={label}
-        aria-disabled={isDisabled || undefined}
-        aria-expanded={panel ? panel.isOpen : undefined}
-        aria-controls={panel?.isOpen ? panel.id : undefined}
-        data-menu-toggle={panel?.id}
-        onPress={isDisabled ? undefined : onPress}
-        className={cls(
-          "data-[focus-visible=true]:ring-theme size-11 shrink-0 rounded-full bg-transparent text-white/90 aria-disabled:pointer-events-auto aria-disabled:cursor-not-allowed aria-disabled:opacity-35 aria-expanded:text-white data-[hovered=true]:bg-transparent data-[hovered=true]:text-white data-[pressed=true]:bg-transparent",
-          className
-        )}>
-        <HugeiconsIcon
-          icon={icon}
-          strokeWidth={1.5}
-          style={{ width: iconSize, height: iconSize }}
-        />
-      </Button>
-      <Tooltip.Content className='bg-black/80 text-xs text-white ring-1 ring-white/10 backdrop-blur-md'>
-        {title ?? label}
-      </Tooltip.Content>
-    </Tooltip>
+    <button
+      ref={ref}
+      type='button'
+      aria-label={label}
+      title={title ?? label}
+      aria-disabled={isDisabled || undefined}
+      aria-expanded={panel ? panel.isOpen : undefined}
+      aria-controls={panel?.isOpen ? panel.id : undefined}
+      data-panel={panel?.id}
+      onClick={isDisabled ? undefined : onPress}
+      className={cls(controlClass(size), className)}>
+      {children}
+    </button>
   )
 }

@@ -1,6 +1,3 @@
-"use client"
-
-import { Button } from "@heroui/react"
 import { Alert02Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 
@@ -28,7 +25,7 @@ export function PlaybackError({ error }: Readonly<{ error: MediaSourceError }>) 
     <div className='absolute inset-0 grid place-items-center bg-black/70 px-4'>
       <div
         role='alert'
-        className='flex max-w-sm flex-col items-center gap-3 rounded-md bg-zinc-900/90 px-6 py-8 text-center ring-1 ring-white/10'>
+        className='border-gradient flex max-w-sm flex-col items-center gap-3 rounded-2xl bg-neutral-900/80 px-6 py-8 text-center backdrop-blur-xl'>
         <HugeiconsIcon
           icon={Alert02Icon}
           size={40}
@@ -37,11 +34,12 @@ export function PlaybackError({ error }: Readonly<{ error: MediaSourceError }>) 
         />
         <h2 className='text-lg font-medium text-white'>{title}</h2>
         <p className='text-sm text-zinc-400'>{message}</p>
-        <Button
-          onPress={() => window.location.reload()}
-          className='bg-theme data-[hovered=true]:bg-theme-400 mt-3 rounded-sm text-black'>
+        <button
+          type='button'
+          onClick={() => window.location.reload()}
+          className='bg-theme hover:bg-theme-400 focus-visible:bg-theme-400 mt-3 cursor-pointer rounded-lg px-4 py-2 text-sm font-medium text-black transition-colors'>
           Reload
-        </Button>
+        </button>
       </div>
     </div>
   )

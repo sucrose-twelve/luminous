@@ -66,11 +66,11 @@ export function EpisodeCardBody({
 
         {audios.length ? (
           <span className='flex flex-wrap items-center gap-x-2.5 text-[0.6875rem] text-zinc-400'>
-            <span className='text-theme' aria-hidden>
+            <span className='text-foreground' aria-hidden>
               <HugeiconsIcon
+                className='size-3.5'
                 icon={AudioWave01Icon}
                 color='currentColor'
-                size={14}
                 strokeWidth={2}
               />
             </span>

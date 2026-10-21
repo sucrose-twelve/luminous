@@ -37,7 +37,7 @@ export function TimeDisplay({
   )
 
   return (
-    <div className='flex justify-between text-[13px] text-white/90 tabular-nums'>
+    <div className='flex justify-between text-xs text-white/85 tabular-nums sm:text-sm'>
       <span>{formatTime(scrubTime ?? seconds, duration)}</span>
       <span>{formatTime(duration, duration)}</span>
     </div>

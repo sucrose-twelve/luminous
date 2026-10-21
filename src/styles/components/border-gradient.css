@@ -1,0 +1,33 @@
+@layer components {
+  /**
+   * The glass edge of the player's buttons and panels (`docs/design/LMP.png`): a hairline that is brightest at
+   * the top right and fades toward the bottom left. A masked pseudo-element draws it, so it stays crisp over a
+   * translucent, blurred fill and follows the element's radius. The element becomes `relative` for it; a
+   * position utility (`absolute`) still wins, since utilities come after components.
+   *
+   * A focused button brightens its edge instead of drawing an outline.
+   */
+  .border-gradient {
+    --border-gradient-from: rgb(255 255 255 / 0.25);
+    --border-gradient-to: rgb(255 255 255 / 0);
+    position: relative;
+
+    &::before {
+      @apply pointer-events-none absolute inset-0 rounded-[inherit] p-px;
+      content: "";
+      background: linear-gradient(
+        to bottom left,
+        var(--border-gradient-from),
+        var(--border-gradient-to) 65%
+      );
+      mask:
+        linear-gradient(#000 0 0) content-box exclude,
+        linear-gradient(#000 0 0);
+    }
+
+    &:is(button, a):focus-visible {
+      --border-gradient-from: rgb(255 255 255 / 0.95);
+      --border-gradient-to: rgb(255 255 255 / 0.4);
+    }
+  }
+}

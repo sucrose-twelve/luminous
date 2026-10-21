@@ -6,6 +6,11 @@
 > ดีไซน์อ้างอิง: `docs/design/` — `00-Overview.png` (controls ทั้งหมด), `01-Actions.png` (popover Audio Tracks
 > / Preferences + hover preview), `02-Playlist.png` (Playlist panel) ภาพใน `docs/design/references/`
 > เป็นแค่แรงบันดาลใจ
+>
+> **2026-10-22: UI ออกแบบใหม่ตาม `docs/design/LMP.png`** (`notes/new-lmp-spec.md` + ผลการทำท้ายไฟล์นั้น)
+> ส่วนที่พูดถึง layout เดิม, HeroUI, volume slider, popover Audio Tracks, Playlist panel, หน้าต่างปุ่มลัดแบบ
+> Modal และดับเบิลแตะ (§6.1–§6.12, §7.8, §10.3, §10.4) ถูกแทนที่แล้ว ส่วน MSE, ปุ่มลัด, skip, autoplay, progress
+> ยังเป็นตามไฟล์นี้
 
 ## 0. Context
 

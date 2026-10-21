@@ -1,123 +1,182 @@
 "use client"
 
-import { Dropdown, Kbd, Label, Separator, type Selection } from "@heroui/react"
+import { AnimatePresence, m, type Transition } from "framer-motion"
+import { useCallback, useEffect, useId, useRef } from "react"
+
 import {
-  KeyboardIcon,
-  PreferenceHorizontalIcon,
-  SlidersHorizontalIcon
-} from "@hugeicons/core-free-icons"
-import { HugeiconsIcon } from "@hugeicons/react"
-import { useCallback, useMemo, type RefObject } from "react"
+  AudioLinesIcon,
+  CheckIcon,
+  CircleProgressPlayIcon,
+  FastForwardIcon,
+  MoreVerticalIcon
+} from "@/components/icons"
+import { languageName } from "@/libs/language"
+import { usePlayerStore } from "@/stores/player"
 
-import { cls } from "@/libs/utils"
-
-import type { LmpProps } from "../types"
+import type { LmpAudioTrack, LmpProps } from "../types"
+import { endonym } from "../utils"
 import { ControlButton } from "./control-button"
-import { PLAYER_MENU_ITEM, PlayerMenu } from "./player-menu"
+import { Switch } from "./switch"
 
 export type PlaybackPreference = LmpProps["preference"]
 
-const TOGGLES: { key: keyof PlaybackPreference; label: string }[] = [
-  { key: "autoplayNext", label: "Autoplay Next" },
-  { key: "autoSkip", label: "Auto Skip" }
-]
+const TOGGLES: { key: keyof PlaybackPreference; label: string; icon: React.ReactNode }[] =
+  [
+    { key: "autoplayNext", label: "Autoplay Next", icon: <CircleProgressPlayIcon /> },
+    { key: "autoSkip", label: "Auto Skip", icon: <FastForwardIcon /> }
+  ]
 
 /**
- * "Preferences": its button, the Autoplay Next and Auto Skip switches (saved to the account), plus the way
- * into the keyboard shortcut list.
+ * A row of the popover: a full-width button, lighter on hover and keyboard focus.
+ */
+const MENU_ROW =
+  "flex w-full cursor-pointer items-center justify-between gap-3 rounded px-2.5 py-2 text-left transition-colors hover:bg-white/10 focus-visible:bg-white/10"
+
+const POP: Transition = { duration: 0.2, ease: "easeOut" }
+
+/**
+ * "Preferences" (`docs/design/LMP.png`): the button at the right end of the top bar, and the popover it opens
+ * below it.
  *
- * The switches are checkbox items of a multiple-selection section, which keeps the menu open while they flip.
+ * - Switches: Autoplay Next and Auto Skip, saved to the account (`onTogglePreference`), and Stable Volume,
+ *   kept per device in the player store. Stable Volume changes no sound yet
+ *   (`notes/lmp-stable-volume-plan.md`).
+ * - "Audio Language": every track of this episode, in English and in its own language, the playing one
+ *   checked. Only when there is a choice.
+ * - Keyboard shortcuts, which opens the shortcut list (`Shift+/`).
+ *
+ * A disclosure: focus stays on the button, and Tab goes on into the popover. Escape closes it (focus returns
+ * to the button); a click outside closes it through the session's dismiss layer, which the popover sits above.
  */
 export function PreferencesMenu({
-  preference,
-  anchorRef,
   isOpen,
   onOpenChange,
-  onToggle,
+  preference,
+  onTogglePreference,
+  audio,
   onOpenShortcuts
 }: Readonly<{
-  preference: PlaybackPreference
-  anchorRef: RefObject<HTMLElement | null>
   isOpen: boolean
   onOpenChange: (isOpen: boolean) => void
-  onToggle: (key: keyof PlaybackPreference) => void
+  preference: PlaybackPreference
+  onTogglePreference: (key: keyof PlaybackPreference) => void
+  audio: {
+    tracks: LmpAudioTrack[]
+    currentId: string
+    onSelect: (track: LmpAudioTrack) => void
+  }
   onOpenShortcuts: () => void
 }>) {
-  const selectedKeys = useMemo(
-    () => TOGGLES.filter(({ key }) => preference[key]).map(({ key }) => key),
-    [preference]
+  const panelId = useId()
+  const audioId = useId()
+  const buttonRef = useRef<HTMLButtonElement>(null)
+  const panelRef = useRef<HTMLDivElement>(null)
+  const stableVolume = usePlayerStore((state) => state.stableVolume)
+  const setStableVolume = usePlayerStore((state) => state.setStableVolume)
+
+  const toggle = useCallback(() => onOpenChange(!isOpen), [isOpen, onOpenChange])
+
+  const toggleStableVolume = useCallback(
+    () => setStableVolume(!stableVolume),
+    [stableVolume, setStableVolume]
   )
 
   /**
-   * One press flips one switch: the changed key is the one whose new state differs from the preference.
+   * The shortcut list gives focus back to whatever had it when it closes: make that the button, not this row,
+   * which unmounts with the popover.
    */
-  const handleSelectionChange = useCallback(
-    (keys: Selection) => {
-      if (keys === "all") return
-      const toggled = TOGGLES.find(({ key }) => keys.has(key) !== preference[key])
-      if (toggled) onToggle(toggled.key)
-    },
-    [preference, onToggle]
-  )
+  const openShortcuts = useCallback(() => {
+    buttonRef.current?.focus({ preventScroll: true })
+    onOpenShortcuts()
+  }, [onOpenShortcuts])
+
+  useEffect(() => {
+    if (!isOpen) return
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return
+      if (panelRef.current?.contains(document.activeElement))
+        buttonRef.current?.focus({ preventScroll: true })
+      onOpenChange(false)
+    }
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [isOpen, onOpenChange])
 
   return (
-    <PlayerMenu
-      title='Preferences'
-      icon={SlidersHorizontalIcon}
-      align='end'
-      anchorRef={anchorRef}
-      isOpen={isOpen}
-      onOpenChange={onOpenChange}
-      trigger={<ControlButton label='Preferences' icon={PreferenceHorizontalIcon} />}>
-      <Dropdown.Menu aria-label='Preferences' className='gap-0 p-0'>
-        <Dropdown.Section
-          aria-label='Playback'
-          selectionMode='multiple'
-          selectedKeys={selectedKeys}
-          onSelectionChange={handleSelectionChange}
-          className='items-stretch'>
-          {TOGGLES.map(({ key, label }) => (
-            <Dropdown.Item
-              key={key}
-              id={key}
-              textValue={label}
-              className={PLAYER_MENU_ITEM}>
-              {({ isSelected }) => (
-                <>
-                  <Label>{label}</Label>
-                  <span
-                    aria-hidden
-                    className={cls(
-                      "relative h-4.5 w-8 shrink-0 rounded-full ring-1 transition-colors",
-                      isSelected ? "bg-theme ring-theme" : "bg-transparent ring-white/60"
-                    )}>
-                    <span
-                      className={cls(
-                        "absolute top-1/2 left-0.5 size-3.5 -translate-y-1/2 rounded-full transition-transform",
-                        isSelected ? "translate-x-3.5 bg-black" : "bg-white/80"
-                      )}
-                    />
-                  </span>
-                </>
-              )}
-            </Dropdown.Item>
-          ))}
-        </Dropdown.Section>
-        <Separator className='my-2 ms-0 w-full bg-white/15' />
-        <Dropdown.Item
-          id='shortcuts'
-          textValue='Keyboard shortcuts'
-          onAction={onOpenShortcuts}
-          className={cls(PLAYER_MENU_ITEM, "justify-start gap-3")}>
-          <HugeiconsIcon icon={KeyboardIcon} size={18} strokeWidth={1.5} />
-          <Label className='grow whitespace-nowrap'>Keyboard shortcuts</Label>
-          <Kbd
-            slot='keyboard'
-            className='h-auto rounded-sm bg-white/10 px-1.5 py-0.5 text-xs text-white ring-1 ring-white/15'>
-            <Kbd.Content>Shift+/</Kbd.Content>
-          </Kbd>
-        </Dropdown.Item>
-      </Dropdown.Menu>
-    </PlayerMenu>
+    <>
+      <ControlButton
+        ref={buttonRef}
+        label='Preferences'
+        panel={{ id: panelId, isOpen }}
+        onPress={toggle}>
+        <MoreVerticalIcon />
+      </ControlButton>
+      <AnimatePresence>
+        {isOpen && (
+          <m.div
+            ref={panelRef}
+            id={panelId}
+            role='group'
+            aria-label='Preferences'
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={POP}
+            className='border-gradient bg-background/40 absolute top-full right-0 z-20 mt-3 max-h-[calc(100dvh-5rem)] w-60 overflow-y-auto overscroll-contain rounded-lg p-2 text-[13px] text-white backdrop-blur-2xl sm:mt-5'>
+            {TOGGLES.map(({ key, label, icon }) => (
+              <Switch
+                key={key}
+                label={label}
+                icon={icon}
+                isOn={preference[key]}
+                onToggle={() => onTogglePreference(key)}
+                className={MENU_ROW}
+              />
+            ))}
+            <Switch
+              label='Stable Volume'
+              icon={<AudioLinesIcon />}
+              isOn={stableVolume}
+              onToggle={toggleStableVolume}
+              className={MENU_ROW}
+            />
+            {audio.tracks.length > 1 && (
+              <div role='group' aria-labelledby={audioId}>
+                <p
+                  id={audioId}
+                  className='my-1.5 rounded-md bg-white/15 py-1 text-center text-xs text-white/85'>
+                  Audio Language
+                </p>
+                {audio.tracks.map((track) => {
+                  const isCurrent = track.id === audio.currentId
+                  return (
+                    <button
+                      key={track.id}
+                      type='button'
+                      aria-current={isCurrent || undefined}
+                      onClick={() => audio.onSelect(track)}
+                      className={MENU_ROW}>
+                      <span>
+                        {languageName(track.language)} (
+                        <span lang={track.language}>{endonym(track.language)}</span>)
+                      </span>
+                      {isCurrent && <CheckIcon aria-hidden className='size-4 shrink-0' />}
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+            <div aria-hidden className='mx-2.5 my-1.5 h-px bg-white/10' />
+            <button type='button' onClick={openShortcuts} className={MENU_ROW}>
+              Keyboard shortcuts
+              <kbd className='rounded-sm bg-white/10 px-1.5 py-0.5 font-sans text-[11px] text-white/85'>
+                Shift+/
+              </kbd>
+            </button>
+          </m.div>
+        )}
+      </AnimatePresence>
+    </>
   )
 }

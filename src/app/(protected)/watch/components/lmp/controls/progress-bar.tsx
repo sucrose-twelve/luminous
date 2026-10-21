@@ -16,7 +16,7 @@ const BUFFER_EVENTS = [
   "emptied"
 ] as const
 
-const BUFFERED_RANGE_CLASS = "absolute inset-y-0 bg-white/50"
+const BUFFERED_RANGE_CLASS = "absolute inset-y-0 bg-white/35"
 
 /**
  * Buffered ranges as `[start, end]` pairs, rounded to 0.1 s, with a key that only changes when the drawn bar
@@ -34,7 +34,7 @@ function readBuffered(video: HTMLVideoElement) {
 }
 
 /**
- * The seek bar: played (theme color), buffered, and skip ranges, with a preview of the time under the pointer
+ * The seek bar: played (white), buffered, and skip ranges, with a preview of the time under the pointer
  * (a sprite sheet tile when the episode has one, see `PreviewThumbnail`). With a mouse it follows hovering;
  * on touch it shows while dragging.
  *
@@ -268,13 +268,13 @@ export function ProgressBar({
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerUp}
       onPointerLeave={handlePointerLeave}
-      className='group/progress focus-visible:outline-theme relative flex h-4 cursor-pointer touch-none items-center outline-offset-4 select-none focus-visible:outline-2 max-sm:h-6'>
-      <div className='relative h-1 w-full overflow-hidden rounded-full bg-white/30 transition-[height] group-hover/progress:h-1.5 group-data-active/progress:h-1.5'>
+      className='group/progress relative flex h-4 cursor-pointer touch-none items-center select-none max-sm:h-6'>
+      <div className='relative h-1 w-full overflow-hidden rounded-full bg-white/25 transition-[height] group-hover/progress:h-1.5 group-focus-visible/progress:h-1.5 group-data-active/progress:h-1.5'>
         <div ref={bufferedRef} className='absolute inset-0' />
         {skips.map((skip) => (
           <div
             key={`${skip.kind}-${skip.from}`}
-            className='bg-theme/35 absolute inset-y-0'
+            className='bg-theme/45 absolute inset-y-0'
             style={{
               left: `${(skip.from / duration) * 100}%`,
               width: `${((skip.to - skip.from) / duration) * 100}%`
@@ -283,13 +283,13 @@ export function ProgressBar({
         ))}
         <div
           ref={playedRef}
-          className='bg-theme absolute inset-0 origin-left'
+          className='absolute inset-0 origin-left bg-white/90'
           style={{ transform: "scaleX(0)" }}
         />
       </div>
       <div
         ref={headRef}
-        className='bg-theme pointer-events-none absolute top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 scale-0 rounded-full transition-transform group-hover/progress:scale-100 group-focus-visible/progress:scale-100 group-data-active/progress:scale-100'
+        className='pointer-events-none absolute top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 scale-0 rounded-full bg-white shadow-md shadow-black/40 transition-transform group-hover/progress:scale-100 group-focus-visible/progress:scale-100 group-data-active/progress:scale-100'
       />
       <PreviewThumbnail
         ref={previewRef}

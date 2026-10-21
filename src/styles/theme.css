@@ -42,7 +42,6 @@
   --animate-loader: loader 1s cubic-bezier(0.86, 0.01, 0.08, 1);
   --animate-rainbow: rainbow 3s linear infinite;
   --animate-osd: osd 800ms ease-out forwards;
-  --animate-slide-in-right: slide-in-right 200ms ease-out;
   --animate-edge-light: edge-light 2.4s linear infinite;
 
   @keyframes loader {
@@ -73,18 +72,6 @@
     }
     100% {
       opacity: 0;
-    }
-  }
-
-  /**
-   * Player Playlist panel entering from the right edge. Use with `motion-safe:`.
-   */
-  @keyframes slide-in-right {
-    0% {
-      transform: translateX(100%);
-    }
-    100% {
-      transform: translateX(0);
     }
   }
 

@@ -1,9 +1,9 @@
-import { GoBackward10SecIcon, GoForward10SecIcon } from "@hugeicons/core-free-icons"
+import { Backward10sIcon, Forward10sIcon } from "@/components/icons"
 
 import { ControlButton } from "./control-button"
 
 /**
- * −10 s / +10 s. Hidden on narrow screens, where a double tap on either side of the video seeks instead.
+ * −10 s / +10 s, on either side of the episode buttons.
  */
 export function SeekButton({
   offset,
@@ -13,11 +13,10 @@ export function SeekButton({
 
   return (
     <ControlButton
+      size='md'
       label={isForward ? "Forward 10 seconds (→)" : "Back 10 seconds (←)"}
-      icon={isForward ? GoForward10SecIcon : GoBackward10SecIcon}
-      iconSize={28}
-      onPress={() => onSeek(offset)}
-      className='max-sm:hidden'
-    />
+      onPress={() => onSeek(offset)}>
+      {isForward ? <Forward10sIcon /> : <Backward10sIcon />}
+    </ControlButton>
   )
 }

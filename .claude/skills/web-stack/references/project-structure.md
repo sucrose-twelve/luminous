@@ -122,7 +122,7 @@ Use these names so features land in predictable places:
 | Global types      | `src/types/*.d.ts`, `declare type` | `AuthToken`, `NextSearchParams`         |
 
 **Every file and folder name is kebab-case**: components, hooks, stores, utils, and scripts alike
-(`playlist-panel.tsx`, `use-media-source.ts`, `track.spec.ts`). The only exceptions are names the framework
+(`playlist-drawer.tsx`, `use-media-source.ts`, `track.spec.ts`). The only exceptions are names the framework
 fixes (`page.tsx`, `layout.tsx`, `route.ts`, `next.config.ts`, …) and the dotted suffixes in the table above
 (`.zod`, `.nuqs`, `.schema`, `.spec`). This is about file names only: exported identifiers stay camelCase /
 PascalCase (`useMediaSource`, `PlaylistPanel`).

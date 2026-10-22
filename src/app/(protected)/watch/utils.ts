@@ -1,6 +1,7 @@
-import { clamp, pick } from "es-toolkit"
+import { clamp, pick, uniq } from "es-toolkit"
 
 import type { Locales } from "@/constants/enum"
+import { episodeTag } from "@/libs/episode"
 
 import type {
   ContentEpisodes,
@@ -10,6 +11,7 @@ import type {
   WatchTrack
 } from "./actions/read"
 import type { LmpAdjacent, LmpProps } from "./components/lmp/types"
+import { seasonLabel } from "./components/lmp/utils"
 
 /**
  * The `preferences` column defaults, for an account that never saved a row.
@@ -131,6 +133,24 @@ export function resolveStartAt(
         : 0
 
   return duration - startAt < RESUME_TAIL_SECONDS ? 0 : startAt
+}
+
+/**
+ * The watch page's title: the episode, its season (`seasonLabel`), then the content, e.g.
+ * `EP 01 • Season 1 • Sousou no Frieren` or `EP 01 • The Golden Land (S2) • Sousou no Frieren`. A movie has no
+ * episode part, and a season titled like its content isn't repeated.
+ */
+export function watchTitle({
+  episode,
+  season,
+  content
+}: Pick<WatchEpisode, "episode" | "season" | "content">) {
+  const parts = [
+    ...(season.kind === "movie" ? [] : [episodeTag(episode, " ")]),
+    seasonLabel(season),
+    content.title
+  ]
+  return uniq(parts).join(" • ")
 }
 
 /**

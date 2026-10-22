@@ -3,6 +3,7 @@
 import { useImperativeHandle, useRef } from "react"
 
 import { formatTime } from "@/libs/time"
+import { cls } from "@/libs/utils"
 
 import { spriteTile } from "../utils"
 
@@ -26,9 +27,9 @@ export type PreviewThumbnailHandle = {
 }
 
 /**
- * The hover preview above the progress bar (`docs/design/01-Actions.png`): the sprite sheet tile for the time
- * under the pointer, with the time in a small label along its bottom edge, and the skip range's name above it
- * ("Intro"). Without a ready sprite sheet it is the time label alone.
+ * The hover preview above the progress bar (`docs/design/LMP.png`): the sprite sheet tile for the time under
+ * the pointer, with the time along its bottom edge, and the skip range's name above it ("Intro"). Without a
+ * ready sprite sheet it is the time alone, in a small pill.
  *
  * Driven through `ref` (`show` / `hide`) by the progress bar once per animation frame, writing the DOM
  * directly, so moving the pointer never re-renders React. The tile is a CSS background at its native size
@@ -85,7 +86,12 @@ export function PreviewThumbnail({
   const timeLabel = (
     <span
       ref={timeRef}
-      className='rounded-xs bg-black/75 px-1.5 py-0.5 text-xs text-white tabular-nums'
+      className={cls(
+        "text-xs font-medium text-white tabular-nums",
+        sprite
+          ? "text-shadow-md"
+          : "border-gradient rounded-full bg-black/60 px-2.5 py-1 backdrop-blur-md"
+      )}
     />
   )
 
@@ -94,16 +100,16 @@ export function PreviewThumbnail({
       ref={rootRef}
       hidden
       aria-hidden
-      className='pointer-events-none absolute bottom-full mb-4 flex -translate-x-1/2 flex-col items-center gap-1.5'>
+      className='pointer-events-none absolute bottom-full mb-6 flex -translate-x-1/2 flex-col items-center gap-1.5'>
       <span
         ref={skipRef}
         hidden
-        className='rounded-xs bg-black/70 px-1.5 py-0.5 text-[11px] text-white/80'
+        className='border-gradient rounded-full bg-black/60 px-2 py-0.5 text-[11px] text-white/85 backdrop-blur-md'
       />
       {sprite ? (
         <div
           ref={tileRef}
-          className='relative flex items-end justify-center rounded-sm bg-black bg-no-repeat pb-1.5 shadow-lg ring-1 ring-white/25'
+          className='border-gradient flex items-end justify-center rounded-lg bg-black bg-no-repeat pb-1.5 shadow-lg shadow-black/40'
           style={{
             width: sprite.grid.width,
             height: sprite.grid.height,

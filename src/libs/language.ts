@@ -10,12 +10,19 @@ export function languageCode(language: Locales) {
 const languageNames = new Intl.DisplayNames(["en"], { type: "language" })
 
 /**
+ * A language's English name: `ja-JP` → `Japanese`.
+ */
+export function languageName(language: Locales) {
+  return languageNames.of(language.split("-")[0]) ?? language
+}
+
+/**
  * Reads an episode's audios out for screen readers, e.g. `"Japanese, Thai dub"`.
  */
 export function audiosLabel(audios: readonly { language: Locales; isDubbed: boolean }[]) {
   return audios
     .map(({ language, isDubbed }) => {
-      const name = languageNames.of(language.split("-")[0]) ?? language
+      const name = languageName(language)
       return isDubbed ? `${name} dub` : name
     })
     .join(", ")

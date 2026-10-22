@@ -34,6 +34,17 @@ function subscribe(onChange: () => void) {
 }
 
 /**
+ * Puts the player container in element fullscreen, then turns a phone to landscape (other devices refuse the
+ * lock, which is ignored). Rejects without a user gesture. Callers check that `container.requestFullscreen`
+ * exists first: Safari's prefixed API and the iPhone's video-only fullscreen are `useFullscreen`'s fallbacks.
+ */
+export async function requestContainerFullscreen(container: HTMLElement) {
+  await container.requestFullscreen()
+  const orientation = screen.orientation as LockableOrientation
+  orientation.lock?.("landscape")?.catch(() => {})
+}
+
+/**
  * Fullscreen for the whole player container, so the controls, OSD, and panels come along. The state is read
  * from the document, so fullscreen carried over from the previous episode shows correctly.
  *
@@ -65,11 +76,8 @@ export function useFullscreen(
 
     if (document.pictureInPictureElement) document.exitPictureInPicture().catch(() => {})
 
-    if (container.requestFullscreen) {
-      container
-        .requestFullscreen()
-        .then(() => (screen.orientation as LockableOrientation).lock?.("landscape"))
-        .catch(() => {})
+    if (typeof container.requestFullscreen === "function") {
+      requestContainerFullscreen(container).catch(() => {})
     } else if (container.webkitRequestFullscreen) {
       container.webkitRequestFullscreen()
     } else {

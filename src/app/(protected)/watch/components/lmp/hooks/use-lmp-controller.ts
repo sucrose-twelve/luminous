@@ -53,7 +53,6 @@ export function useLmpController({
   const router = useRouter()
   const searchParams = useSearchParams()
   const [status, setStatusState] = useState<LmpStatus>("loading")
-  const [isBlocked, setIsBlocked] = useState(false)
   const statusRef = useRef<LmpStatus>("loading")
   const pendingSeekRef = useRef<number | null>(null)
   const [initialAt] = useState(() => {
@@ -76,16 +75,14 @@ export function useLmpController({
   }, [])
 
   /**
-   * A refused `play()` (autoplay policy) leaves the player paused behind a big Play button. An `AbortError`
-   * only means a `pause()` or a new source interrupted it.
+   * A refused `play()` (autoplay policy) leaves the player paused, its controls up with the big Play button in
+   * the middle. An `AbortError` only means a `pause()` or a new source interrupted it.
    */
   const startPlayback = useCallback(
     (video: HTMLVideoElement) => {
       video.play().catch((error: unknown) => {
-        if (error instanceof DOMException && error.name === "NotAllowedError") {
-          setIsBlocked(true)
+        if (error instanceof DOMException && error.name === "NotAllowedError")
           setStatus("paused")
-        }
       })
     },
     [setStatus]
@@ -184,7 +181,6 @@ export function useLmpController({
     saveProgress()
     setProgressSuppressed(true)
     setStatus("stopped")
-    setIsBlocked(false)
     video.pause()
     stopBuffering()
     throttledSeek.cancel()
@@ -292,10 +288,7 @@ export function useLmpController({
     const video = videoRef.current
     if (!video) return
 
-    const handlePlaying = () => {
-      setIsBlocked(false)
-      setStatus("playing")
-    }
+    const handlePlaying = () => setStatus("playing")
     const handlePause = () => {
       if (statusRef.current === "playing" || statusRef.current === "buffering")
         setStatus("paused")
@@ -378,9 +371,8 @@ export function useLmpController({
       status: mse.error ? ("error" as const) : status,
       error: mse.error,
       mode: mse.mode,
-      isBlocked,
       actions
     }),
-    [mse.error, mse.mode, status, isBlocked, actions]
+    [mse.error, mse.mode, status, actions]
   )
 }

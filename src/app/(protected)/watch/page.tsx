@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import { z } from "zod"
 
 import {
@@ -8,7 +9,7 @@ import {
 } from "./actions/read"
 import { LmpLoader } from "./components/lmp/lmp-loader"
 import { WatchNotice } from "./components/watch-notice"
-import { pickTrack, toPlayerProps, withDefaultPreference } from "./utils"
+import { pickTrack, toPlayerProps, watchTitle, withDefaultPreference } from "./utils"
 import { queryValidator } from "./validator.nuqs"
 
 /**
@@ -16,6 +17,16 @@ import { queryValidator } from "./validator.nuqs"
  * validation. The root layout's `false` only covers the static-shell check; each page is validated on its own.
  */
 export const instant = false
+
+export async function generateMetadata({
+  searchParams
+}: NextSearchParams): Promise<Metadata> {
+  const { vid } = queryValidator.parse(await searchParams)
+  if (!vid || !z.uuid().safeParse(vid).success) return {}
+
+  const current = await readWatchEpisode(vid)
+  return current ? { title: watchTitle(current) } : {}
+}
 
 export default async function Watch({ searchParams }: NextSearchParams) {
   const { vid, audio, t } = queryValidator.parse(await searchParams)

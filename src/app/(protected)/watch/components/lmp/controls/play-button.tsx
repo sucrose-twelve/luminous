@@ -1,20 +1,24 @@
-import { PauseIcon, PlayIcon } from "@hugeicons/core-free-icons"
+import { PauseIcon, PlayIcon, ReplayIcon } from "@/components/icons"
 
+import type { LmpStatus } from "../types"
 import { ControlButton } from "./control-button"
 
 /**
- * The large ringed Play / Pause button in the middle of the control bar.
+ * The large Play / Pause button in the middle of the player. Once the episode has ended it replays.
  */
 export function PlayButton({
-  isPlaying,
+  status,
   onPress
-}: Readonly<{ isPlaying: boolean; onPress: () => void }>) {
+}: Readonly<{ status: LmpStatus; onPress: () => void }>) {
+  const isPlaying = status === "playing" || status === "buffering"
+  const isEnded = status === "ended"
+
   return (
     <ControlButton
-      label={isPlaying ? "Pause (Space)" : "Play (Space)"}
-      icon={isPlaying ? PauseIcon : PlayIcon}
-      onPress={onPress}
-      className='size-12 text-white ring-2 ring-white/90 transition-transform data-[hovered=true]:scale-105 sm:size-14'
-    />
+      size='lg'
+      label={isPlaying ? "Pause (Space)" : isEnded ? "Replay (Space)" : "Play (Space)"}
+      onPress={onPress}>
+      {isPlaying ? <PauseIcon /> : isEnded ? <ReplayIcon /> : <PlayIcon />}
+    </ControlButton>
   )
 }

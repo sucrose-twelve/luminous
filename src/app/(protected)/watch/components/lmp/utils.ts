@@ -1,4 +1,12 @@
 import { episodeTag, episodeTitle, type EpisodeNaming } from "@/libs/episode"
+import { seasonName } from "@/libs/season"
+import { pad2 } from "@/libs/utils"
+
+type SeasonNaming = Readonly<{
+  kind: Content.SeasonKind
+  seasonNo: number | null
+  title: string | null
+}>
 
 /**
  * A season's short tag: `S2` for a numbered season or spinoff, `SP` for a special, `null` for an unnumbered
@@ -40,11 +48,53 @@ export function withEpisodeTitle(label: string, episode: EpisodeNaming) {
   return title ? `${label} · ${title}` : label
 }
 
+/**
+ * A season as the player names it: its title with its tag (`The Golden Land (S2)`), or without a title its
+ * name (`Season 2`, `Specials`). A movie's title stands alone.
+ *
+ * @example
+ * ```ts
+ * seasonLabel({ kind: "season", seasonNo: 2, title: "The Golden Land" }) // "The Golden Land (S2)"
+ * seasonLabel({ kind: "season", seasonNo: 1, title: null }) // "Season 1"
+ * ```
+ */
+export function seasonLabel(season: SeasonNaming) {
+  if (!season.title) return seasonName(season)
+
+  const tag = season.kind === "movie" ? null : seasonTag(season.kind, season.seasonNo)
+  return tag ? `${season.title} (${tag})` : season.title
+}
+
+/**
+ * The episode spelled out under the top bar's title: `Episode 01`, or the tag of a special or OVA
+ * (`SP - 01`).
+ */
+export function episodeName(episode: EpisodeNaming) {
+  return episode.kind === "regular"
+    ? `Episode ${pad2(episode.episodeNo)}`
+    : episodeTag(episode)
+}
+
 const displayNames = new Map<string, Intl.DisplayNames>()
 
 /**
+ * A language named in itself: `ja-JP` → `日本語`, `th-TH` → `ไทย`. One `Intl.DisplayNames` per language is
+ * kept for reuse.
+ */
+export function endonym(language: string) {
+  const [base] = language.split("-")
+  let names = displayNames.get(language)
+  if (!names) {
+    names = new Intl.DisplayNames([language], { type: "language" })
+    displayNames.set(language, names)
+  }
+
+  return names.of(base) ?? language
+}
+
+/**
  * Names an audio track in its own language (an endonym): the original track as `Original (日本語)`, a dub as
- * `ไทย`. One `Intl.DisplayNames` per language is kept for reuse.
+ * `ไทย`.
  *
  * @example
  * ```ts
@@ -53,15 +103,8 @@ const displayNames = new Map<string, Intl.DisplayNames>()
  * ```
  */
 export function languageLabel(language: string, isDubbed: boolean) {
-  const [base] = language.split("-")
-  let names = displayNames.get(language)
-  if (!names) {
-    names = new Intl.DisplayNames([language], { type: "language" })
-    displayNames.set(language, names)
-  }
-
-  const endonym = names.of(base) ?? language
-  return isDubbed ? endonym : `Original (${endonym})`
+  const name = endonym(language)
+  return isDubbed ? name : `Original (${name})`
 }
 
 /**

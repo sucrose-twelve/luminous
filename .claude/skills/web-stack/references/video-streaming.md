@@ -370,7 +370,7 @@ export const queryValidator = createSearchParamsCache({
   its tracks (`readWatchEpisode`), then every episode of the content, the saved progress,
   and the preferences with `Promise.all`, picks the track, and renders **only the
   player**. There is no episode list under it: episodes are listed in the player's
-  Playlist panel, passed in as props.
+  Playlist drawer, passed in as props.
 - **Prev / Next stay in the language being played.** A neighbor without a track in that
   language counts as missing (`null`): a Thai dub that stops at episode 6 has no next
   episode, even though the original goes on. That episode is passed as `nextFallback` (in
@@ -535,29 +535,49 @@ async function togglePictureInPicture() {
 
 ## Player UI & preferences
 
-**Design reference: `docs/design/`** — `00-Overview.png` (all controls), `01-Actions.png`
-(Audio Tracks and Preferences popovers, hover preview), `03-Playlist.png` (Playlist
-panel). Follow it when drawing the player; `docs/design/references/` is inspiration only.
-Full spec in `notes/lumine-media-player.md`.
+**Design reference: `docs/design/LMP.png`** (the player, the Preferences popover, the end
+card, the hover preview). Follow it when drawing the player; the older `00-Overview.png`,
+`01-Actions.png`, and `02-Playlist.png` show the previous layout, and
+`docs/design/references/` is inspiration only. Full spec in
+`notes/lumine-media-player.md`, redesign in `notes/new-lmp-spec.md`.
 
 - The player fills the viewport (`h-dvh w-full bg-black`, video `object-contain`), with no
-  rounded corners; on a portrait phone it is full-width `aspect-video` with the Playlist
-  below it. Set `poster="/api/art/thumbnail/<episodeId>"`, `playsInline`, and
-  `preload="metadata"`.
-- Layout: a top bar (Back to the content page, `EP01 • Content title`, Playlist button);
-  above the progress bar, elapsed time on the left and duration on the right (`mm:ss`, or
-  `h:mm:ss` from 1 h); a bottom row of audio tracks + mute (left), previous / −10 /
-  play-pause / +10 / next (center), PiP / fullscreen / preferences (right). There is **no
-  Stop button** (Shift+S only) and the volume slider only expands on hover / focus of the
-  mute button. Played progress and the current episode use the `theme` color (`#05d6a2`).
-- UI copy is English, as in the design ("Skip intro", "Audio Tracks", "Preferences",
-  "Playlist"). Audio track names are endonyms: `Original (日本語)`, `ไทย`.
-- The Playlist panel overlays the right side of the player and lives in the persistent
-  part of the player, so it stays open after picking an episode.
-- Per-device settings (volume, muted) go in a dedicated zustand store `stores/player/`,
-  persisted to `localStorage`. Per-account settings (audio language, autoplay-next,
-  auto-skip) live in the `preferences` table. The server reads them when it picks the
-  track, and passes them to the player as props.
+  rounded corners. Set `poster="/api/art/thumbnail/<episodeId>"`, `playsInline`, and
+  `preload="metadata"`. On a touch device it opens in fullscreen: on mount when the
+  browser still counts the tap that led there, otherwise at the first tap on the player.
+  iPhone, whose only fullscreen is the native video player, is left alone.
+- **No HeroUI inside the player**: plain `<button>`s, and framer-motion for the drawers,
+  the Preferences popover, and its switches (`LazyMotion` with the features loaded on
+  demand, `m` components only, `MotionConfig reducedMotion="user"`). Icons come from
+  `@/components/icons`. Buttons and panels are dark glass with the `border-gradient` edge
+  (`src/styles/components/border-gradient.css`), and **draw no focus outline** (`.lmp` in
+  `globals.css`): keyboard focus lightens the fill and the edge instead.
+- Layout: a top bar (Back to the content page; the content title over
+  `Season 1 • Episode 01`; on the right mute, PiP, fullscreen, Playlist, Preferences); the
+  playback buttons in the middle of the player (−10, previous, play-pause, next, +10;
+  play becomes replay once the episode ended); elapsed time and duration over the progress
+  bar at the bottom (`mm:ss`, or `h:mm:ss` from 1 h). Messages are a toast at the top
+  center. There is **no Stop button** (Shift+S only) and **no volume slider**: ↑ / ↓ change
+  the volume, the speaker button mutes. Played progress is white.
+- Only the controls themselves take the pointer, so a tap anywhere else on the player
+  shows or hides them.
+- UI copy is English, as in the design ("Skip intro", "Preferences", "Audio Language",
+  "Playlist"). The audio menu names a language in English, then in itself:
+  `Japanese (日本語)`, `Thai (ไทย)`; other messages use the endonym (`No ไทย audio`).
+- The Preferences popover opens under its button: the Autoplay Next, Auto Skip, and Stable
+  Volume switches, then "Audio Language" (the episode's tracks, when there is more than
+  one), then Keyboard shortcuts. Escape or a click outside closes it.
+- The Playlist and the keyboard shortcut list open in the player's own `Drawer` (from the
+  right on `lg` and up, from the bottom below), rendered inside the player container so
+  they show in fullscreen. The Playlist lives in the persistent part of the player, so it
+  stays open after picking an episode.
+- Per-device settings (volume, muted, Stable Volume) go in a dedicated zustand store
+  `stores/player/`, persisted to `localStorage`. Stable Volume doesn't change the sound yet
+  (`notes/lmp-stable-volume-plan.md`). Per-account settings (audio language,
+  autoplay-next, auto-skip) live in the `preferences` table. The server reads them when it
+  picks the track, and passes them to the player as props.
+- The page title (`generateMetadata`) is `EP 01 • Season 1 • Content title`; a season with
+  a title reads `Title (S2)`.
 - Auto-skip: when `preferences.auto_skip` is on, seek to `to` as soon as `currentTime`
   enters a skip range instead of showing the button.
 - Keyboard (Lumine Media Player, full plan in `notes/lumine-media-player.md`): Space
@@ -570,9 +590,8 @@ Full spec in `notes/lumine-media-player.md`.
   page has no inputs, so there is no input-focus guard. Shift+/ opens a shortcut list
   rendered from the same `HOTKEYS` table the handler uses.
 - Pointer: clicking the video does nothing (play / pause only from the buttons and
-  shortcuts), and there is no double-click action. On touch, a tap toggles the controls
-  and a double tap on the left / right 35 % seeks −10 / +10 s (taps chained within 600 ms
-  add up).
+  shortcuts), and there is no double-click action. On touch, a tap toggles the controls;
+  there is no double-tap seek (the ±10 s buttons are always shown).
 - Skip buttons come from `episodes.skips` (`Content.Skip[]`:
   `{ kind: "intro" | "outro" | "recap", from, to }` in seconds). Show "Skip intro" / "Skip
   recap" while `from ≤ currentTime < to`. When an `outro` starts, offer `nextVid`. The

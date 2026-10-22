@@ -2,6 +2,7 @@
 @import "@heroui/styles";
 
 @import "./theme.css";
+@import "./components/border-gradient.css";
 @import "./components/card-content.css";
 @import "./components/edge-light.css";
 
@@ -11,5 +12,14 @@
     @apply bg-background text-foreground antialiased;
     font-family: var(--font-geist), var(--font-thai), var(--font-japanese), "sans-serif";
     text-rendering: optimizeLegibility;
+  }
+
+  /**
+   * The player's controls never draw a focus outline: its shortcuts leave focus on the last button pressed,
+   * where an outline would linger over the video. Keyboard focus shows in their edge and fill instead. A
+   * transparent outline, rather than none, still appears in forced-colors mode.
+   */
+  .lmp :where(button, a, [tabindex]) {
+    outline: 2px solid transparent;
   }
 }

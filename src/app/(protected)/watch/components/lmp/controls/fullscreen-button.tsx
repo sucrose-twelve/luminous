@@ -1,4 +1,4 @@
-import { ArrowExpandIcon, ArrowShrinkIcon } from "@hugeicons/core-free-icons"
+import { MaximizeIcon, MinimizeIcon } from "@/components/icons"
 
 import { ControlButton } from "./control-button"
 
@@ -12,8 +12,8 @@ export function FullscreenButton({
   return (
     <ControlButton
       label={isFullscreen ? "Exit fullscreen (Shift+F)" : "Fullscreen (Shift+F)"}
-      icon={isFullscreen ? ArrowShrinkIcon : ArrowExpandIcon}
-      onPress={onToggle}
-    />
+      onPress={onToggle}>
+      {isFullscreen ? <MinimizeIcon /> : <MaximizeIcon />}
+    </ControlButton>
   )
 }

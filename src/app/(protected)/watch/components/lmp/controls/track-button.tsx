@@ -1,4 +1,4 @@
-import { NextIcon, PreviousIcon } from "@hugeicons/core-free-icons"
+import { SkipBackIcon, SkipFrowardIcon } from "@/components/icons"
 
 import type { LmpAdjacent } from "../types"
 import { episodeLabel, withEpisodeTitle } from "../utils"
@@ -24,11 +24,12 @@ export function TrackButton({
 
   return (
     <ControlButton
+      size='md'
       label={label}
       title={title}
-      icon={isNext ? NextIcon : PreviousIcon}
       isDisabled={!target}
-      onPress={() => target && onGo(target)}
-    />
+      onPress={() => target && onGo(target)}>
+      {isNext ? <SkipFrowardIcon /> : <SkipBackIcon />}
+    </ControlButton>
   )
 }

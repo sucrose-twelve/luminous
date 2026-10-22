@@ -115,9 +115,19 @@ import { z } from "zod"
 import { readContentEpisodes, readWatchEpisode } from "./actions/read"
 import { Player } from "./components/player"
 import { WatchNotice } from "./components/watch-notice"
+import { watchTitle } from "./utils"
 import { queryValidator } from "./validator.nuqs"
 
-export const metadata: Metadata = { title: "Watch" }
+/**
+ * Same parse as the page: nuqs returns the cached result for the same search params.
+ */
+export async function generateMetadata({ searchParams }: NextSearchParams): Promise<Metadata> {
+  const { vid } = queryValidator.parse(await searchParams)
+  if (!vid || !z.uuid().safeParse(vid).success) return {}
+
+  const episode = await readWatchEpisode(vid) // cached, so the page's call is free
+  return episode ? { title: watchTitle(episode) } : {}
+}
 
 export default async function Watch({ searchParams }: NextSearchParams) {
   const { vid, t } = queryValidator.parse(await searchParams)
@@ -128,7 +138,7 @@ export default async function Watch({ searchParams }: NextSearchParams) {
 
   const episodes = await readContentEpisodes(episode.contentId)
 
-  // The watch page is only the player: episodes go to its Playlist panel as props
+  // The watch page is only the player: episodes go to its Playlist drawer as props
   return <Player episode={episode} episodes={episodes} startAt={t} />
 }
 ```

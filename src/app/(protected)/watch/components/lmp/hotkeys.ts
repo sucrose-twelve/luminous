@@ -6,6 +6,8 @@ export type HotkeyAction =
   | "volumeDown"
   | "seekBackward"
   | "seekForward"
+  | "seekBackwardLong"
+  | "seekForwardLong"
   | "prev"
   | "next"
   | "toggleFullscreen"
@@ -89,6 +91,22 @@ export const HOTKEYS: readonly Hotkey[] = [
     action: "seekForward",
     keys: ["→"],
     label: "Forward 10 seconds"
+  },
+  {
+    code: "ArrowLeft",
+    shift: true,
+    repeat: true,
+    action: "seekBackwardLong",
+    keys: ["Shift", "←"],
+    label: "Back 30 seconds"
+  },
+  {
+    code: "ArrowRight",
+    shift: true,
+    repeat: true,
+    action: "seekForwardLong",
+    keys: ["Shift", "→"],
+    label: "Forward 30 seconds"
   },
   {
     code: "KeyP",

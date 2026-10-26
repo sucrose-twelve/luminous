@@ -3,8 +3,10 @@
 import { ListBox, Select, type Key } from "@heroui/react"
 import { useCallback } from "react"
 
+import { SORT_OPTIONS } from "@/constants"
+
 import { useBrowseQuery } from "../hooks/use-browse-query"
-import { SORT_OPTIONS, sortOptionOf } from "../utils"
+import { sortOptionOf } from "../utils"
 
 export function SortSelect() {
   const { query, update } = useBrowseQuery()
@@ -20,7 +22,7 @@ export function SortSelect() {
 
   return (
     <Select
-      className='w-full min-w-28'
+      className='min-w-24'
       aria-label='Sort by'
       placeholder='Sort by'
       value={current?.id ?? null}
@@ -38,7 +40,6 @@ export function SortSelect() {
               id={option.id}
               textValue={option.label}>
               {option.label}
-              <ListBox.ItemIndicator />
             </ListBox.Item>
           ))}
         </ListBox>

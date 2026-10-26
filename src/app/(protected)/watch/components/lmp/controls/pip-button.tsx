@@ -1,4 +1,4 @@
-import { PictureInPictureIcon } from "@/components/icons"
+import { PictureInPictureIcon } from "@/app/(protected)/watch/components/lmp/icons"
 
 import { ControlButton } from "./control-button"
 
@@ -15,6 +15,7 @@ export function PipButton({
 
   return (
     <ControlButton
+      className='max-md:hidden'
       label={
         isActive ? "Exit picture-in-picture (Shift+I)" : "Picture-in-picture (Shift+I)"
       }

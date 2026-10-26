@@ -3,9 +3,9 @@
 import { ToggleButton, ToggleButtonGroup, type Key } from "@heroui/react"
 import { useCallback, useMemo } from "react"
 
+import { HISTORY_STATUS_LABELS, HISTORY_STATUSES } from "@/constants"
+
 import { useHistoryQuery } from "../hooks/use-history-query"
-import { HISTORY_STATUS_LABELS } from "../utils"
-import { HISTORY_STATUSES } from "../validator.zod"
 
 const ALL = "all"
 

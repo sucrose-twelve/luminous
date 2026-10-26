@@ -1,11 +1,9 @@
-import { type SVGAttributes } from "react"
-
 export function AudioLinesIcon({
   width = 32,
   height = 32,
   viewBox = "0 0 24 24",
   ...rest
-}: Readonly<SVGAttributes<SVGElement>>) {
+}: Readonly<React.SVGAttributes<SVGElement>>) {
   return (
     <svg
       xmlns='http://www.w3.org/2000/svg'
@@ -28,7 +26,7 @@ export function CheckIcon({
   height = 32,
   viewBox = "0 0 24 24",
   ...rest
-}: Readonly<SVGAttributes<SVGElement>>) {
+}: Readonly<React.SVGAttributes<SVGElement>>) {
   return (
     <svg
       xmlns='http://www.w3.org/2000/svg'
@@ -51,7 +49,7 @@ export function ChevronLeftIcon({
   height = 32,
   viewBox = "0 0 24 24",
   ...rest
-}: Readonly<SVGAttributes<SVGElement>>) {
+}: Readonly<React.SVGAttributes<SVGElement>>) {
   return (
     <svg
       xmlns='http://www.w3.org/2000/svg'
@@ -74,7 +72,7 @@ export function CircleProgressPlayIcon({
   height = 32,
   viewBox = "0 0 24 24",
   ...rest
-}: Readonly<SVGAttributes<SVGElement>>) {
+}: Readonly<React.SVGAttributes<SVGElement>>) {
   return (
     <svg
       xmlns='http://www.w3.org/2000/svg'
@@ -104,7 +102,7 @@ export function CloseIcon({
   height = 32,
   viewBox = "0 0 24 24",
   ...rest
-}: Readonly<SVGAttributes<SVGElement>>) {
+}: Readonly<React.SVGAttributes<SVGElement>>) {
   return (
     <svg
       xmlns='http://www.w3.org/2000/svg'
@@ -127,7 +125,7 @@ export function FastForwardIcon({
   height = 32,
   viewBox = "0 0 24 24",
   ...rest
-}: Readonly<SVGAttributes<SVGElement>>) {
+}: Readonly<React.SVGAttributes<SVGElement>>) {
   return (
     <svg
       xmlns='http://www.w3.org/2000/svg'
@@ -149,7 +147,7 @@ export function ListVideoIcon({
   height = 32,
   viewBox = "0 0 24 24",
   ...rest
-}: Readonly<SVGAttributes<SVGElement>>) {
+}: Readonly<React.SVGAttributes<SVGElement>>) {
   return (
     <svg
       xmlns='http://www.w3.org/2000/svg'
@@ -177,7 +175,7 @@ export function MaximizeIcon({
   height = 32,
   viewBox = "0 0 24 24",
   ...rest
-}: Readonly<SVGAttributes<SVGElement>>) {
+}: Readonly<React.SVGAttributes<SVGElement>>) {
   return (
     <svg
       xmlns='http://www.w3.org/2000/svg'
@@ -200,7 +198,7 @@ export function MinimizeIcon({
   height = 32,
   viewBox = "0 0 24 24",
   ...rest
-}: Readonly<SVGAttributes<SVGElement>>) {
+}: Readonly<React.SVGAttributes<SVGElement>>) {
   return (
     <svg
       xmlns='http://www.w3.org/2000/svg'
@@ -223,7 +221,7 @@ export function MoreVerticalIcon({
   height = 32,
   viewBox = "0 0 24 24",
   ...rest
-}: Readonly<SVGAttributes<SVGElement>>) {
+}: Readonly<React.SVGAttributes<SVGElement>>) {
   return (
     <svg
       xmlns='http://www.w3.org/2000/svg'
@@ -245,7 +243,7 @@ export function PauseIcon({
   height = 32,
   viewBox = "0 0 24 24",
   ...rest
-}: Readonly<SVGAttributes<SVGElement>>) {
+}: Readonly<React.SVGAttributes<SVGElement>>) {
   return (
     <svg
       xmlns='http://www.w3.org/2000/svg'
@@ -267,7 +265,7 @@ export function PictureInPictureIcon({
   height = 32,
   viewBox = "0 0 24 24",
   ...rest
-}: Readonly<SVGAttributes<SVGElement>>) {
+}: Readonly<React.SVGAttributes<SVGElement>>) {
   return (
     <svg
       xmlns='http://www.w3.org/2000/svg'
@@ -295,7 +293,7 @@ export function PlayIcon({
   height = 32,
   viewBox = "0 0 24 24",
   ...rest
-}: Readonly<SVGAttributes<SVGElement>>) {
+}: Readonly<React.SVGAttributes<SVGElement>>) {
   return (
     <svg
       xmlns='http://www.w3.org/2000/svg'
@@ -317,7 +315,7 @@ export function ReplayIcon({
   height = 32,
   viewBox = "0 0 24 24",
   ...rest
-}: Readonly<SVGAttributes<SVGElement>>) {
+}: Readonly<React.SVGAttributes<SVGElement>>) {
   return (
     <svg
       xmlns='http://www.w3.org/2000/svg'
@@ -347,7 +345,7 @@ export function Backward10sIcon({
   height = 32,
   viewBox = "0 0 36 36",
   ...rest
-}: Readonly<SVGAttributes<SVGElement>>) {
+}: Readonly<React.SVGAttributes<SVGElement>>) {
   return (
     <svg
       xmlns='http://www.w3.org/2000/svg'
@@ -376,7 +374,7 @@ export function Forward10sIcon({
   height = 32,
   viewBox = "0 0 36 36",
   ...rest
-}: Readonly<SVGAttributes<SVGElement>>) {
+}: Readonly<React.SVGAttributes<SVGElement>>) {
   return (
     <svg
       xmlns='http://www.w3.org/2000/svg'
@@ -405,7 +403,7 @@ export function SkipBackIcon({
   height = 32,
   viewBox = "0 0 24 24",
   ...rest
-}: Readonly<SVGAttributes<SVGElement>>) {
+}: Readonly<React.SVGAttributes<SVGElement>>) {
   return (
     <svg
       xmlns='http://www.w3.org/2000/svg'
@@ -433,7 +431,7 @@ export function SkipFrowardIcon({
   height = 32,
   viewBox = "0 0 24 24",
   ...rest
-}: Readonly<SVGAttributes<SVGElement>>) {
+}: Readonly<React.SVGAttributes<SVGElement>>) {
   return (
     <svg
       xmlns='http://www.w3.org/2000/svg'
@@ -461,7 +459,7 @@ export function StopIcon({
   height = 32,
   viewBox = "0 0 24 24",
   ...rest
-}: Readonly<SVGAttributes<SVGElement>>) {
+}: Readonly<React.SVGAttributes<SVGElement>>) {
   return (
     <svg
       xmlns='http://www.w3.org/2000/svg'
@@ -483,7 +481,7 @@ export function VolumeIcon({
   height = 32,
   viewBox = "0 0 24 24",
   ...rest
-}: Readonly<SVGAttributes<SVGElement>>) {
+}: Readonly<React.SVGAttributes<SVGElement>>) {
   return (
     <svg
       xmlns='http://www.w3.org/2000/svg'
@@ -511,7 +509,7 @@ export function VolumeLowIcon({
   height = 32,
   viewBox = "0 0 24 24",
   ...rest
-}: Readonly<SVGAttributes<SVGElement>>) {
+}: Readonly<React.SVGAttributes<SVGElement>>) {
   return (
     <svg
       xmlns='http://www.w3.org/2000/svg'
@@ -539,7 +537,7 @@ export function VolumeOffIcon({
   height = 32,
   viewBox = "0 0 24 24",
   ...rest
-}: Readonly<SVGAttributes<SVGElement>>) {
+}: Readonly<React.SVGAttributes<SVGElement>>) {
   return (
     <svg
       xmlns='http://www.w3.org/2000/svg'

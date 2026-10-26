@@ -1,11 +1,18 @@
 import { buttonVariants } from "@heroui/react"
-import { Alert02Icon, VideoOffIcon } from "@hugeicons/core-free-icons"
+import {
+  Alert02Icon,
+  BrowserIcon,
+  LinkSquare02Icon,
+  VideoOffIcon
+} from "@hugeicons/core-free-icons"
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react"
 import NextLink from "next/link"
 
 import { cls } from "@/libs/utils"
 
-type WatchNoticeProps = { kind: "invalid-link" | "not-found" }
+type WatchNoticeProps = {
+  kind: "invalid-link" | "not-found" | "unsupported-browser" | "in-app-browser"
+}
 
 const NOTICES: Record<
   WatchNoticeProps["kind"],
@@ -20,12 +27,24 @@ const NOTICES: Record<
     icon: VideoOffIcon,
     title: "Video not found",
     message: "It may have been removed or moved."
+  },
+  "unsupported-browser": {
+    icon: BrowserIcon,
+    title: "Browser not supported",
+    message: "Videos don't play in Safari or Firefox. Open this page in Chrome or Edge."
+  },
+  "in-app-browser": {
+    icon: LinkSquare02Icon,
+    title: "Open in a browser",
+    message:
+      "Videos don't play in an app's built-in browser (LINE, X, Discord). Open this link in Chrome or Edge."
   }
 }
 
 /**
- * Message box shown in the player's place when the watch page can't open a track. Not a modal and not a 404
- * page: it fills the viewport in black like the player, so the page doesn't jump.
+ * Message box shown in the player's place when the watch page can't open a track, or this browser can't play
+ * one (`browserNotice`). Not a modal and not a 404 page: it fills the viewport in black like the player, so
+ * the page doesn't jump.
  *
  * Uses `next/link` rather than `@/components/link`: the watch page has no `MainStoreProvider`, which the top
  * loader needs.

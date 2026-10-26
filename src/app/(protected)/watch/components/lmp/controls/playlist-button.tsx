@@ -1,4 +1,4 @@
-import { ListVideoIcon } from "@/components/icons"
+import { ListVideoIcon } from "@/app/(protected)/watch/components/lmp/icons"
 
 import { ControlButton } from "./control-button"
 

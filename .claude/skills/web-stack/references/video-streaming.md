@@ -59,9 +59,9 @@ A typical layout:
   The art step of `tests/track.spec.ts` writes both (see
   [below](#art-step-thumbnails--sprite-sheets)). `seasons.poster` can sit anywhere. All
   are stored by full path too.
-- The DB stores the **full absolute path** of every file (`<CONTENTS_SOURCE_DIR>/Frieren/1/01.mp4`).
-  There's no media root in env; the drive is just part of the path. See
-  [database.md](database.md#media-paths-full-paths).
+- The DB stores the **full absolute path** of every file
+  (`<CONTENTS_SOURCE_DIR>/Frieren/1/01.mp4`). There's no media root in env; the drive is
+  just part of the path. See [database.md](database.md#media-paths-full-paths).
 - The browser only ever sees **IDs**, never paths. `sources`, `path`, `poster`,
   `thumbnail`, and `sprite` are omitted from anything sent to the client.
 - Nothing from the library is copied into `public/` or the repo.
@@ -121,9 +121,9 @@ The import upserts one `episodes` row per episode number and one `tracks` row pe
 is safe to re-run: episodes upsert on `(season_id, episode_no)`, tracks on
 `(episode_id, language)`.
 
-- Original vs dub comes from `isDubbed` alone, never from the folder name. A season may have
-  only dubs (no `isDubbed: false` source); its first source then stands in for the original
-  (`primarySource` in `src/libs/media.ts`).
+- Original vs dub comes from `isDubbed` alone, never from the folder name. A season may
+  have only dubs (no `isDubbed: false` source); its first source then stands in for the
+  original (`primarySource` in `src/libs/media.ts`).
 - A dub source that isn't on disk is skipped with a warning; a missing primary source (the
   original, or the first dub when there's none) stops the run.
 - A dub with fewer episodes than the original (the dub is still airing) just gives those
@@ -161,8 +161,8 @@ instead of parsing the file in the browser.
 
 The last step of `tests/track.spec.ts`. For each imported episode it reads a dubbed file
 (`isDubbed: true`, the first by language) when the episode has one, otherwise its original
-(`isDubbed: false`), and writes into the season's art folder (`seasonArtDirectory`). The DB
-is updated per episode, right after its files.
+(`isDubbed: false`), and writes into the season's art folder (`seasonArtDirectory`). The
+DB is updated per episode, right after its files.
 
 - **Thumbnail** `<NN>.webp`, 640×360: one frame at `intro.to + 30` s if the episode has an
   intro skip, otherwise at 25 % of the duration (past black frames and the opening). An
@@ -365,11 +365,15 @@ export const queryValidator = createSearchParamsCache({
 - The page (plain SSR, no Suspense) parses the params and validates `vid` as a UUID. It
   does **not** call `notFound()`: it returns `<WatchNotice kind="invalid-link" />` when
   `vid` is missing or not a UUID, and `<WatchNotice kind="not-found" />` when no episode
-  has that ID or it has no track yet. `watch-notice.tsx` is an inline message box in the
-  player's place (a link back to `/browse`), not a modal. It loads the episode with all
-  its tracks (`readWatchEpisode`), then every episode of the content, the saved progress,
-  and the preferences with `Promise.all`, picks the track, and renders **only the
-  player**. There is no episode list under it: episodes are listed in the player's
+  has that ID or it has no track yet. Before anything else, `browserNotice(userAgent)`
+  (`watch/utils.ts`, from the request's `User-Agent`) returns
+  `<WatchNotice kind="in-app-browser" />` for an in-app browser (LINE, X, Discord, any
+  app's web view) and `<WatchNotice kind="unsupported-browser" />` for Safari or Firefox:
+  the player supports Chromium browsers only. `watch-notice.tsx` is an inline message box
+  in the player's place (a link back to `/browse`), not a modal. It loads the episode with
+  all its tracks (`readWatchEpisode`), then every episode of the content, the saved
+  progress, and the preferences with `Promise.all`, picks the track, and renders **only
+  the player**. There is no episode list under it: episodes are listed in the player's
   Playlist drawer, passed in as props.
 - **Prev / Next stay in the language being played.** A neighbor without a track in that
   language counts as missing (`null`): a Thai dub that stops at episode 6 has no next
@@ -549,16 +553,16 @@ card, the hover preview). Follow it when drawing the player; the older `00-Overv
 - **No HeroUI inside the player**: plain `<button>`s, and framer-motion for the drawers,
   the Preferences popover, and its switches (`LazyMotion` with the features loaded on
   demand, `m` components only, `MotionConfig reducedMotion="user"`). Icons come from
-  `@/components/icons`. Buttons and panels are dark glass with the `border-gradient` edge
+  `lmp/icons`. Buttons and panels are dark glass with the `border-gradient` edge
   (`src/styles/components/border-gradient.css`), and **draw no focus outline** (`.lmp` in
   `globals.css`): keyboard focus lightens the fill and the edge instead.
 - Layout: a top bar (Back to the content page; the content title over
   `Season 1 • Episode 01`; on the right mute, PiP, fullscreen, Playlist, Preferences); the
-  playback buttons in the middle of the player (−10, previous, play-pause, next, +10;
-  play becomes replay once the episode ended); elapsed time and duration over the progress
-  bar at the bottom (`mm:ss`, or `h:mm:ss` from 1 h). Messages are a toast at the top
-  center. There is **no Stop button** (Shift+S only) and **no volume slider**: ↑ / ↓ change
-  the volume, the speaker button mutes. Played progress is white.
+  playback buttons in the middle of the player (−10, previous, play-pause, next, +10; play
+  becomes replay once the episode ended); elapsed time and duration over the progress bar
+  at the bottom (`mm:ss`, or `h:mm:ss` from 1 h). Messages are a toast at the top center.
+  There is **no Stop button** (Shift+S only) and **no volume slider**: ↑ / ↓ change the
+  volume, the speaker button mutes. Played progress is white.
 - Only the controls themselves take the pointer, so a tap anywhere else on the player
   shows or hides them.
 - UI copy is English, as in the design ("Skip intro", "Preferences", "Audio Language",
@@ -572,8 +576,8 @@ card, the hover preview). Follow it when drawing the player; the older `00-Overv
   they show in fullscreen. The Playlist lives in the persistent part of the player, so it
   stays open after picking an episode.
 - Per-device settings (volume, muted, Stable Volume) go in a dedicated zustand store
-  `stores/player/`, persisted to `localStorage`. Stable Volume doesn't change the sound yet
-  (`notes/lmp-stable-volume-plan.md`). Per-account settings (audio language,
+  `stores/player/`, persisted to `localStorage`. Stable Volume doesn't change the sound
+  yet (`notes/lmp-stable-volume-plan.md`). Per-account settings (audio language,
   autoplay-next, auto-skip) live in the `preferences` table. The server reads them when it
   picks the track, and passes them to the player as props.
 - The page title (`generateMetadata`) is `EP 01 • Season 1 • Content title`; a season with
@@ -581,14 +585,14 @@ card, the hover preview). Follow it when drawing the player; the older `00-Overv
 - Auto-skip: when `preferences.auto_skip` is on, seek to `to` as soon as `currentTime`
   enters a skip range instead of showing the button.
 - Keyboard (Lumine Media Player, full plan in `notes/lumine-media-player.md`): Space
-  play/pause, Shift+S stop, Shift+M mute, ↑/↓ volume ±5 %, ←/→ seek ±10 s, Shift+P /
-  Shift+N previous / next episode, Shift+F fullscreen, Shift+I picture-in-picture. Listen
-  on `window` (capture phase) so keys work without focusing the player. Match
-  `event.code` + `shiftKey`, not `event.key`, so the Thai layout and Caps Lock don't break
-  them. Skip events with Ctrl/Alt/Meta (browser shortcuts) or `isComposing`. Prevent
-  default on Space keydown **and** keyup, or a focused button is clicked too. The watch
-  page has no inputs, so there is no input-focus guard. Shift+/ opens a shortcut list
-  rendered from the same `HOTKEYS` table the handler uses.
+  play/pause, Shift+S stop, Shift+M mute, ↑/↓ volume ±5 %, ←/→ seek ±10 s, Shift+←/→ seek
+  ±30 s, Shift+P / Shift+N previous / next episode, Shift+F fullscreen, Shift+I
+  picture-in-picture. Listen on `window` (capture phase) so keys work without focusing the
+  player. Match `event.code` + `shiftKey`, not `event.key`, so the Thai layout and Caps
+  Lock don't break them. Skip events with Ctrl/Alt/Meta (browser shortcuts) or
+  `isComposing`. Prevent default on Space keydown **and** keyup, or a focused button is
+  clicked too. The watch page has no inputs, so there is no input-focus guard. Shift+/
+  opens a shortcut list rendered from the same `HOTKEYS` table the handler uses.
 - Pointer: clicking the video does nothing (play / pause only from the buttons and
   shortcuts), and there is no double-click action. On touch, a tap toggles the controls;
   there is no double-tap seek (the ±10 s buttons are always shown).

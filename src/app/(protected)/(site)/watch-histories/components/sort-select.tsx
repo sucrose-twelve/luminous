@@ -5,9 +5,9 @@ import { FilterHorizontalIcon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { useCallback } from "react"
 
+import { HISTORY_SORT_LABELS, HISTORY_SORTS } from "@/constants"
+
 import { useHistoryQuery } from "../hooks/use-history-query"
-import { HISTORY_SORT_LABELS } from "../utils"
-import { HISTORY_SORTS } from "../validator.zod"
 
 export function SortSelect() {
   const { query, update } = useHistoryQuery()

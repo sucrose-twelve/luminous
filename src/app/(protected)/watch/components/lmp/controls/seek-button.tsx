@@ -1,4 +1,7 @@
-import { Backward10sIcon, Forward10sIcon } from "@/components/icons"
+import {
+  Backward10sIcon,
+  Forward10sIcon
+} from "@/app/(protected)/watch/components/lmp/icons"
 
 import { ControlButton } from "./control-button"
 

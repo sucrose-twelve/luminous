@@ -1,9 +1,13 @@
 import { addMonths, format } from "date-fns"
 import { pick } from "es-toolkit"
 
-import { SEASONALS, type Seasonal } from "@/constants"
-
-import { type AUDIOS, type ORDERS, type SORTS } from "./validator.zod"
+import {
+  SEASONALS,
+  SORT_OPTIONS,
+  type Order,
+  type Seasonal,
+  type Sort
+} from "@/constants"
 
 /**
  * Pairs every known option with its count from a `group by` query, `0` when the query has no row for it.
@@ -58,39 +62,13 @@ export function escapeLike(text: string) {
   return text.replace(/[\\%_]/g, "\\$&")
 }
 
-export const AUDIO_LABELS: Record<(typeof AUDIOS)[number], string> = {
-  ja: "Japanese",
-  en: "English",
-  th: "Thai",
-  ko: "Korean",
-  zh: "Chinese"
-}
-
-/**
- * The sort dropdown's options: each one is a `sort` + `order` pair in the URL. `relevance` is left out: it
- * only applies while searching, and the page has no search box yet.
- */
-export const SORT_OPTIONS = [
-  { id: "newest", label: "Newest", sort: "released", order: "desc" },
-  { id: "oldest", label: "Oldest", sort: "released", order: "asc" },
-  { id: "title-asc", label: "Title A-Z", sort: "title", order: "asc" },
-  { id: "title-desc", label: "Title Z-A", sort: "title", order: "desc" }
-] as const satisfies readonly {
-  id: string
-  label: string
-  sort: (typeof SORTS)[number]
-  order: (typeof ORDERS)[number]
-}[]
-
-export type SortOption = (typeof SORT_OPTIONS)[number]
-
 /**
  * Finds the sort option the URL currently describes; no `sort` reads as `released` (the reader's default).
  */
 export function sortOptionOf({
   sort,
   order
-}: Readonly<{ sort: (typeof SORTS)[number] | null; order: (typeof ORDERS)[number] }>) {
+}: Readonly<{ sort: Sort | null; order: Order }>) {
   const sortBy = sort ?? "released"
   return (
     SORT_OPTIONS.find((option) => option.sort === sortBy && option.order === order) ??

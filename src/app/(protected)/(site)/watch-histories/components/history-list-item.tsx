@@ -11,7 +11,8 @@ import { RemoveButton } from "./remove-button"
 
 /**
  * One title in the list view: picture, titles, the shown episode with its time and progress, and the actions
- * on the right (under the details on mobile). A completed title has no Continue button, only Remove.
+ * on the right. On mobile the actions get a full-width row of their own, like the grid card's footer, rather
+ * than the narrow picture column. A completed title has no Continue button, only Remove.
  */
 export function HistoryListItem({ item }: Readonly<{ item: HistoryItem }>) {
   return (
@@ -57,7 +58,7 @@ export function HistoryListItem({ item }: Readonly<{ item: HistoryItem }>) {
         </div>
       </div>
 
-      <div className='flex items-stretch gap-2 sm:self-end sm:pl-4'>
+      <div className='max-sm:border-foreground/10 flex items-stretch justify-end gap-2 max-sm:col-span-full max-sm:border-t max-sm:pt-3 sm:self-end sm:pl-4'>
         {item.continueHref ? (
           <ContinueLink className='max-sm:grow' href={item.continueHref} />
         ) : null}

@@ -24,7 +24,7 @@ export default async function Browse({ searchParams }: NextSearchParams) {
     <section className='max-w-8xl mx-auto w-full px-4 py-8'>
       <header className='flex flex-wrap items-end justify-between gap-4 pb-8 sm:gap-6 sm:pb-12'>
         <div className='max-w-xl'>
-          <h1 className='text-2xl font-bold sm:text-4xl'>Browse Contents</h1>
+          <h1 className='text-2xl font-bold sm:text-4xl'>Contents</h1>
           <p className='mt-2 text-xs text-zinc-500'>
             Every anime, movie, and series on the home server. Pick a kind, sort, or open
             the filter to narrow it down.

@@ -2,10 +2,12 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
-import { ListVideoIcon } from "@/components/icons"
+import {
+  ChevronLeftIcon,
+  ListVideoIcon
+} from "@/app/(protected)/watch/components/lmp/icons"
 import type { Locales } from "@/constants/enum"
 import { seasonName } from "@/libs/season"
-import { cls } from "@/libs/utils"
 import { usePlayerStore } from "@/stores/player"
 
 import { PLAYLIST_DRAWER_ID } from "../controls/playlist-button"
@@ -127,28 +129,24 @@ function PlaylistContent({
   return (
     <>
       {playlist.seasons.length > 1 && (
-        <div
-          role='group'
-          aria-label='Season'
-          className='flex shrink-0 [scrollbar-width:none] gap-2 overflow-x-auto p-4'>
-          {playlist.seasons.map((item) => {
-            const isShown = item.id === seasonId
-            return (
-              <button
-                key={item.id}
-                type='button'
-                aria-pressed={isShown}
-                onClick={() => setSeasonId(item.id)}
-                className={cls(
-                  "border-gradient shrink-0 cursor-pointer rounded-full px-3.5 py-1.5 text-sm whitespace-nowrap transition-colors",
-                  isShown
-                    ? "bg-white text-black"
-                    : "bg-white/5 text-white/80 hover:bg-white/15 focus-visible:bg-white/15"
-                )}>
+        <div className='border-gradient m-4 shrink-0 rounded-lg'>
+          <select
+            aria-label='Season'
+            value={seasonId}
+            onChange={(event) => setSeasonId(event.target.value)}
+            className='w-full cursor-pointer appearance-none truncate rounded-lg bg-white/5 py-2 ps-3.5 pe-9 text-sm text-white/80 scheme-dark transition-colors outline-none *:bg-neutral-900 *:text-white hover:bg-white/10 focus-visible:bg-white/10'>
+            {playlist.seasons.map((item) => (
+              <option key={item.id} value={item.id}>
                 {seasonName(item)}
-              </button>
-            )
-          })}
+              </option>
+            ))}
+          </select>
+          <ChevronLeftIcon
+            aria-hidden
+            width={16}
+            height={16}
+            className='pointer-events-none absolute top-1/2 right-3.5 -translate-y-1/2 -rotate-90 text-white/60'
+          />
         </div>
       )}
       <ol

@@ -1,4 +1,8 @@
-import { PauseIcon, PlayIcon, ReplayIcon } from "@/components/icons"
+import {
+  PauseIcon,
+  PlayIcon,
+  ReplayIcon
+} from "@/app/(protected)/watch/components/lmp/icons"
 
 import type { LmpStatus } from "../types"
 import { ControlButton } from "./control-button"

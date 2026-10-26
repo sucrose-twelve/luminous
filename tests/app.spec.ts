@@ -3,86 +3,69 @@ import fs from "node:fs"
 import path from "node:path"
 import { setTimeout } from "node:timers/promises"
 
-import { count, eq } from "drizzle-orm"
+import { count, eq, notInArray } from "drizzle-orm"
+import { omit } from "es-toolkit"
 import { NIL, v7 as uuidV7 } from "uuid"
 
 import { db, schema } from "@/drizzle"
-import { contentColumns, seasonColumns } from "@/drizzle/table-columns"
+import {
+  contentColumns,
+  episodeColumns,
+  seasonColumns,
+  trackColumns
+} from "@/drizzle/table-columns"
+import type { ContentInsertValues, SeasonInsertValues } from "@/drizzle/types"
 import { logger } from "@/libs/logger"
+import { slugify } from "@/libs/utils"
+
+import contents from "../docs/contents.json"
+import seasons from "../docs/seasons.json"
 
 async function main() {
   const startedAt = new Date()
 
-  // TODO:
-
   logger("🎉 Done.", startedAt)
   process.exit(0)
 }
 
-main()
+// main().catch((error) => logger(`❌ ${error}`))
 
 async function sub() {
   const startedAt = new Date()
-  const raw = await db
-    .select()
-    .from(schema.seasons)
-    .innerJoin(schema.contents, eq(schema.seasons.contentId, schema.contents.id))
 
-  const r: any[] = []
+  for await (const content of contents) {
+    const slug = slugify(content.title)
+    const result = await db.transaction(async (tx) => {
+      const [created] = await tx
+        .insert(schema.contents)
+        .values({ ...omit(content, ["seasons"]), slug } as ContentInsertValues)
+        .onConflictDoNothing()
+        .returning({ id: schema.contents.id, slug: schema.contents.slug })
 
-  for await (const { contents, seasons } of raw) {
-    for await (const source of seasons.sources) {
-      // logger(`📄 ${contents.title}: S${seasons.seasonNo}`)
+      await tx.insert(schema.seasons).values(
+        content.seasons.map((season: any) => ({
+          ...season,
+          contentId: created.id
+        })) as SeasonInsertValues[]
+      )
 
-      if (source.pathname.endsWith(".mp4")) continue
+      return created
+    })
 
-      const pathname = path.resolve(source.pathname)
-      const dirents = await fs.promises.readdir(pathname, { withFileTypes: true })
-      const files = dirents.filter((dirent) => dirent.isFile())
-
-      if (files.length < 1) {
-        r.push({
-          seasonId: seasons.id,
-          pathname,
-          msg: "No episode files"
-        })
-
-        continue
-      }
-
-      const [tracks] = await db
-        .select({ count: count() })
-        .from(schema.tracks)
-        .leftJoin(schema.episodes, eq(schema.tracks.episodeId, schema.episodes.id))
-        .where(eq(schema.episodes.seasonId, seasons.id))
-
-      if (tracks.count < files.length) {
-        r.push({
-          seasonId: seasons.id,
-          pathname,
-          msg: `Not Equal: tracks(${tracks.count}), disk(${files.length})`
-        })
-
-        continue
-      }
-
-      for (const dirent of dirents) {
-        if (dirent.isDirectory() && dirent.name.endsWith(".original")) {
-          const directory = path.join(dirent.parentPath, dirent.name)
-          await fs.promises.rm(directory, { recursive: true, force: true })
-          logger(`🧹 Deleted ${directory}`)
-          break
-        }
-      }
-
-      await setTimeout(100)
+    if (result) {
+      logger(`✅ A content "${content.title}" has been successfully imported.`)
+    } else {
+      logger(`❌ A content with slug "${slug}" already exists`)
     }
   }
 
-  await fs.promises.writeFile("docs/warn.json", JSON.stringify(r), { encoding: "utf-8" })
+  await db
+    .insert(schema.seasons)
+    .values(seasons as SeasonInsertValues[])
+    .onConflictDoNothing()
 
-  logger("🎉 Done.", startedAt)
+  logger("🎉 Succeed", startedAt)
   process.exit(0)
 }
 
-// sub()
+// sub().catch((error) => logger(`❌ ${error}`))

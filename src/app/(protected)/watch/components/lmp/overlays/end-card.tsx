@@ -3,7 +3,7 @@
 import Image from "next/image"
 import { useEffect, useId, useRef } from "react"
 
-import { PlayIcon, ReplayIcon } from "@/components/icons"
+import { PlayIcon, ReplayIcon } from "@/app/(protected)/watch/components/lmp/icons"
 import { cls } from "@/libs/utils"
 
 import type { LmpAdjacent } from "../types"
@@ -25,6 +25,8 @@ const SECONDARY_BUTTON = cls(
  * - only a next episode in another language (`fallback`) → asks: "EP07 isn't available in ไทย yet", with
  *   Watch in Original / Replay, never counting down
  * - neither → nothing: the Play button in the middle of the player replays
+ *
+ * While the card shows, the other controls stay hidden until there's activity (`lmp-session.tsx`).
  *
  * @param audio - The track that just played, to name the missing language
  * @param hasSeasons - The content has more than one season, so labels carry the season (`S2 EP01`)

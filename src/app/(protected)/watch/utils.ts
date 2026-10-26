@@ -1,4 +1,5 @@
 import { clamp, pick, uniq } from "es-toolkit"
+import { userAgentFromString } from "next/server"
 
 import type { Locales } from "@/constants/enum"
 import { episodeTag } from "@/libs/episode"
@@ -26,6 +27,22 @@ const DEFAULT_PREFERENCE: WatchPreference = {
  * A saved position this close to the end restarts the episode instead, so resuming never lands on the credits.
  */
 const RESUME_TAIL_SECONDS = 10
+
+/**
+ * Browsers the player doesn't support, by the name `userAgentFromString` gives them: Safari on macOS, iOS,
+ * and iPadOS (`Safari`, `Mobile Safari`), and every Firefox (desktop, Android, `FxiOS`, `Firefox Focus`).
+ * Chrome and Edge on iOS are WebKit underneath but named apart, so they still pass.
+ */
+const UNSUPPORTED_BROWSER = /^(Mobile )?Safari$|Firefox/
+
+/**
+ * In-app browsers, by the token each app adds to the user agent: LINE (`Line/`), X (`Twitter for iPhone`,
+ * `TwitterAndroid`), Discord (`Discord/`), Facebook and Messenger (`FBAN`, `FBAV`, `FB_IAB`), Instagram,
+ * TikTok (`BytedanceWebview`, `musical_ly`), WeChat (`MicroMessenger`), and KakaoTalk. Any other app's web
+ * view is caught by Android's `; wv)` marker, or by the embedded WebKit check in `browserNotice`.
+ */
+const IN_APP_BROWSER =
+  /\b(Line|Discord)\/|\bTwitter|FBAN|FBAV|FB_IAB|Instagram|BytedanceWebview|musical_ly|MicroMessenger|KAKAOTALK|; wv\)/i
 
 type ContentEpisode = ContentEpisodes["episodes"][number]
 
@@ -151,6 +168,26 @@ export function watchTitle({
     content.title
   ]
   return uniq(parts).join(" • ")
+}
+
+/**
+ * Which browser notice the watch page shows instead of the player, or `null` when this browser can play.
+ *
+ * In-app browsers come first, so LINE or X on an iPhone asks to open the link in a browser rather than
+ * blaming Safari. A WebKit user agent without a `Safari/` token is an app's embedded web view (iOS and macOS):
+ * every WebKit or Blink browser sends one, including Chrome, Edge, and Firefox on iOS.
+ *
+ * @param userAgent - The request's `User-Agent` header
+ */
+export function browserNotice(userAgent: string) {
+  const isEmbeddedWebKit =
+    userAgent.includes("AppleWebKit/") && !userAgent.includes("Safari/")
+  if (isEmbeddedWebKit || IN_APP_BROWSER.test(userAgent)) return "in-app-browser" as const
+
+  const { name } = userAgentFromString(userAgent).browser
+  if (name && UNSUPPORTED_BROWSER.test(name)) return "unsupported-browser" as const
+
+  return null
 }
 
 /**

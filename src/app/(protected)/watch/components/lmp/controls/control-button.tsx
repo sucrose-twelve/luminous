@@ -1,8 +1,8 @@
 import { cls } from "@/libs/utils"
 
 const SIZES = {
-  sm: "size-9 sm:size-11 lg:size-12 [&_svg]:size-5 sm:[&_svg]:size-6",
-  md: "size-12 sm:size-16 [&_svg]:size-6 sm:[&_svg]:size-8",
+  sm: "size-8 sm:size-10 lg:size-12 [&_svg]:size-4 sm:[&_svg]:size-6",
+  md: "size-11 sm:size-15 [&_svg]:size-6 sm:[&_svg]:size-8",
   lg: "size-14 sm:size-22 [&_svg]:size-8 sm:[&_svg]:size-10"
 } as const
 
@@ -19,7 +19,7 @@ export function controlClass(size: ControlSize) {
     "bg-black/20 text-white backdrop-blur-xl",
     "transition-[background-color,scale] duration-150 select-none",
     "hover:bg-black/15 focus-visible:bg-white/15 active:scale-98",
-    "aria-disabled:cursor-not-allowed aria-disabled:opacity-40 aria-disabled:hover:bg-black/40 aria-disabled:active:scale-100",
+    "aria-disabled:cursor-not-allowed aria-disabled:opacity-40 aria-disabled:hover:bg-black/20 aria-disabled:active:scale-100",
     SIZES[size]
   )
 }

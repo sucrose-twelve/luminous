@@ -1,9 +1,10 @@
 import { Chip } from "@heroui/react"
 
 import { Link } from "@/components/link"
+import { HISTORY_STATUS_CHIPS } from "@/constants"
 import { cls } from "@/libs/utils"
 
-import { HISTORY_STATUS_CHIPS, type HistoryItem } from "../utils"
+import type { HistoryItem } from "../utils"
 import { ContinueLink } from "./continue-link"
 import { HistoryProgress } from "./history-progress"
 import { HistoryThumbnail } from "./history-thumbnail"

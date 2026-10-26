@@ -1,6 +1,10 @@
 "use client"
 
-import { VolumeIcon, VolumeLowIcon, VolumeOffIcon } from "@/components/icons"
+import {
+  VolumeIcon,
+  VolumeLowIcon,
+  VolumeOffIcon
+} from "@/app/(protected)/watch/components/lmp/icons"
 import { usePlayerStore } from "@/stores/player"
 
 import type { LmpActions } from "../types"

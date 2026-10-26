@@ -9,7 +9,7 @@
    */
   .border-gradient {
     --border-gradient-from: rgb(255 255 255 / 0.25);
-    --border-gradient-to: rgb(255 255 255 / 0);
+    --border-gradient-to: rgb(255 255 255 / 0.02);
     position: relative;
 
     &::before {
@@ -26,8 +26,8 @@
     }
 
     &:is(button, a):focus-visible {
-      --border-gradient-from: rgb(255 255 255 / 0.95);
-      --border-gradient-to: rgb(255 255 255 / 0.4);
+      --border-gradient-from: rgb(255 255 255 / 0.75);
+      --border-gradient-to: rgb(255 255 255 / 0.25);
     }
   }
 }

@@ -2,13 +2,22 @@ import { count, eq, isNotNull, sql } from "drizzle-orm"
 import { groupBy, sumBy } from "es-toolkit"
 import { cacheLife, cacheTag } from "next/cache"
 
-import { KINDS, SEASON_STATUSES, SEASONALS, SOURCES } from "@/constants"
+import {
+  AUDIO_LANGUAGES,
+  AUDIOS,
+  KINDS,
+  ORDERS,
+  PAGE_SIZES,
+  SEASON_STATUSES,
+  SEASONALS,
+  SORTS,
+  SOURCES
+} from "@/constants"
 import { genres } from "@/constants/data/genres"
 import type { Locales } from "@/constants/enum"
 import { db, schema } from "@/drizzle"
 
 import { withCounts } from "../utils"
-import { AUDIO_LANGUAGES, AUDIOS, ORDERS, PAGE_SIZES, SORTS } from "../validator.zod"
 
 /**
  * Loads every option the browse filters can offer, each with the number of seasons it matches.

@@ -103,9 +103,20 @@ export function LmpSession({
   const isPlaying = status === "playing" || status === "buffering"
   const isPlaylistOpen = usePlayerStore((state) => state.playlistOpen)
   const setPlaylistOpen = usePlayerStore((state) => state.setPlaylistOpen)
+  /**
+   * The end card shows once the episode ended with somewhere to go (`<EndCard>` needs `next` or
+   * `nextFallback`). Without one, the Replay button in the middle is the only way on, so the controls stay
+   * pinned as on any pause.
+   */
+  const hasEndCard = status === "ended" && (next !== null || props.nextFallback !== null)
   const isPinned =
-    !isPlaying || isHelpOpen || isMenuOpen || isHoveringBars || isPlaylistOpen
+    (!isPlaying && !hasEndCard) ||
+    isHelpOpen ||
+    isMenuOpen ||
+    isHoveringBars ||
+    isPlaylistOpen
   const visibility = useControlsVisibility(containerRef, isPinned)
+  const hideControls = visibility.hide
   const label = episodeLabel(episode, season, playlist.seasons.length > 1)
   const skipState = useSkips({
     videoRef,
@@ -261,6 +272,8 @@ export function LmpSession({
     volumeDown: () => changeVolume(-VOLUME_STEP),
     seekBackward: () => seekBy(-10),
     seekForward: () => seekBy(10),
+    seekBackwardLong: () => seekBy(-30),
+    seekForwardLong: () => seekBy(30),
     prev: () => {
       if (prev) actions.goTo(prev)
       else osd.flash("No previous episode")
@@ -316,6 +329,14 @@ export function LmpSession({
   const handleBarFocus = useCallback(() => visibility.reveal(), [visibility])
 
   /**
+   * The end card stands alone: the other controls leave as soon as it shows, and come back like during
+   * playback (mouse movement, a tap, keyboard focus, a seek shortcut).
+   */
+  useEffect(() => {
+    if (hasEndCard) hideControls()
+  }, [hasEndCard, hideControls])
+
+  /**
    * Lends this session's actions to the playlist, which lives in `<Lmp>` and outlasts it.
    */
   useEffect(() => {
@@ -356,7 +377,7 @@ export function LmpSession({
             <SkipNotice notice={skipState.notice} onUndo={skipState.undo} />
           )}
         </div>
-        {status === "ended" && (
+        {hasEndCard && (
           <EndCard
             next={next}
             fallback={props.nextFallback}

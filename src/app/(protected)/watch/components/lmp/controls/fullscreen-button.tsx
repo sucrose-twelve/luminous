@@ -1,4 +1,4 @@
-import { MaximizeIcon, MinimizeIcon } from "@/components/icons"
+import { MaximizeIcon, MinimizeIcon } from "@/app/(protected)/watch/components/lmp/icons"
 
 import { ControlButton } from "./control-button"
 

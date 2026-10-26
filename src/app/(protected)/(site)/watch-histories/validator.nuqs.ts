@@ -9,7 +9,7 @@ import {
   HISTORY_SORTS,
   HISTORY_STATUSES,
   HISTORY_VIEWS
-} from "./validator.zod"
+} from "@/constants"
 
 /**
  * Search param parsers, shared by the server cache below and the client controls (`useHistoryQuery`) so both

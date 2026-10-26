@@ -3,7 +3,7 @@
 import { ListBox, Select, type Key } from "@heroui/react"
 import { useCallback } from "react"
 
-import { KIND_LABELS } from "@/constants/labels"
+import { KIND_LABELS } from "@/constants"
 
 import type { BrowseFilters } from "../actions/read-filters"
 import { useBrowseQuery } from "../hooks/use-browse-query"
@@ -27,11 +27,11 @@ export function KindSelect({ kinds }: Readonly<{ kinds: BrowseFilters["kinds"] }
 
   return (
     <Select
-      className='w-full min-w-28'
+      className='min-w-24'
       aria-label='Kind'
       value={query.kind ?? ALL}
       onChange={handleChange}>
-      <Select.Trigger className='bg-foreground/5 text-foreground rounded-sm font-bold'>
+      <Select.Trigger className='bg-foreground/5 text-foreground rounded-sm font-bold text-nowrap'>
         <Select.Value />
         <Select.Indicator />
       </Select.Trigger>
@@ -39,7 +39,6 @@ export function KindSelect({ kinds }: Readonly<{ kinds: BrowseFilters["kinds"] }
         <ListBox>
           <ListBox.Item className='rounded-sm' id={ALL} textValue='All'>
             All
-            <ListBox.ItemIndicator />
           </ListBox.Item>
           {kinds
             .filter((option) => option.count > 0)
@@ -50,7 +49,6 @@ export function KindSelect({ kinds }: Readonly<{ kinds: BrowseFilters["kinds"] }
                 id={option.value}
                 textValue={KIND_LABELS[option.value]}>
                 {KIND_LABELS[option.value]}
-                <ListBox.ItemIndicator />
               </ListBox.Item>
             ))}
         </ListBox>

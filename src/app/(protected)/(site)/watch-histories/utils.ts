@@ -1,64 +1,12 @@
 import { formatDistanceStrict } from "date-fns"
 
-import { KIND_LABELS } from "@/constants/labels"
+import { KIND_LABELS, type HistoryStatus } from "@/constants"
 import { episodeTag, episodeTitle } from "@/libs/episode"
 import { genreText } from "@/libs/genre"
 import { seasonName } from "@/libs/season"
 import { formatSpokenTime, formatTime } from "@/libs/time"
 
 import type { HistoryRow } from "./actions/read"
-import type {
-  HistoryKind,
-  HistorySort,
-  HistoryStatus,
-  HistoryView
-} from "./validator.zod"
-
-/**
- * Days without watching after which an unfinished content counts as on hold.
- */
-export const ON_HOLD_AFTER_DAYS = 30
-
-/**
- * The `contents.kind` values each kind tab matches.
- */
-export const HISTORY_KIND_FILTERS: Record<HistoryKind, Content.Kind[]> = {
-  anime: ["anime_series"],
-  series: ["tv_series", "series", "shows"],
-  movie: ["movie"]
-}
-
-export const HISTORY_KIND_LABELS: Record<HistoryKind, string> = {
-  anime: "Anime",
-  series: "Series",
-  movie: "Movies"
-}
-
-/**
- * The status tabs' labels; the cards' chips use the longer `HISTORY_STATUS_CHIPS`.
- */
-export const HISTORY_STATUS_LABELS: Record<HistoryStatus, string> = {
-  watching: "Watching",
-  completed: "Completed",
-  on_hold: "On Hold"
-}
-
-export const HISTORY_STATUS_CHIPS: Record<HistoryStatus, string> = {
-  watching: "Currently Watching",
-  completed: "Completed",
-  on_hold: "On Hold"
-}
-
-export const HISTORY_SORT_LABELS: Record<HistorySort, string> = {
-  recent: "Recently Watched",
-  oldest: "Oldest Watched",
-  title: "Title A–Z"
-}
-
-export const HISTORY_VIEW_LABELS: Record<HistoryView, string> = {
-  grid: "Grid view",
-  list: "List view"
-}
 
 /**
  * One history card, ready to render: the episode to show (the saved one, or the next one when the saved one is

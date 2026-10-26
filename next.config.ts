@@ -11,7 +11,11 @@ const nextConfig: NextConfig = {
   experimental: {
     serverActions: {
       bodySizeLimit: "4mb"
-    }
+    },
+    /**
+     * `bun run build` deletes `.next` first, so a Turbopack build cache would never be read back.
+     */
+    turbopackFileSystemCacheForBuild: false
   },
 
   httpAgentOptions: {

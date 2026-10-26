@@ -3,7 +3,14 @@ declare namespace Account {
 }
 
 declare namespace Content {
-  export type Kind = "movie" | "anime_series" | "tv_series" | "series" | "shows"
+  export type Kind =
+    | "movie"
+    | "anime_series"
+    | "anime_ecchi"
+    | "tv_series"
+    | "series"
+    | "shows"
+    | "movie_adult"
 
   export type Source =
     | "light_novel"

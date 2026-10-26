@@ -1,3 +1,4 @@
+import { EPISODE_KIND_TAGS } from "@/constants"
 import { pad2 } from "@/libs/utils"
 
 export type EpisodeNaming = Readonly<{
@@ -5,15 +6,6 @@ export type EpisodeNaming = Readonly<{
   kind: Content.EpisodeKind
   title: string | null
 }>
-
-/**
- * What an untitled episode other than a regular one is tagged, by kind.
- */
-const EPISODE_KIND_TAGS: Record<Exclude<Content.EpisodeKind, "regular">, string> = {
-  special: "SP",
-  ova: "OVA",
-  recap: "Recap"
-}
 
 /**
  * An episode's short tag: `EP01` for a regular episode. A special or OVA is tagged by its title, which the

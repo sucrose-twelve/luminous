@@ -1,3 +1,7 @@
+import { Button, Separator, Tooltip } from "@heroui/react"
+import { Clock01Icon } from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
+
 import type { AuthAccount } from "@/actions/auth"
 import { BrandLogo } from "@/components/brand-logo"
 import { Link } from "@/components/link"
@@ -5,7 +9,6 @@ import { SignInButton } from "@/components/sign-in/sign-in-button"
 import { cls } from "@/libs/utils"
 
 import { AccountMenu } from "./account-menu"
-// import { HeaderNav } from "./header-nav"
 import { HeaderSearch } from "./header-search"
 import { MobileNav } from "./mobile-nav"
 
@@ -25,10 +28,8 @@ export function SiteHeader({ account }: Readonly<{ account: AuthAccount | null }
       <nav
         aria-label='Main'
         className={cls(
-          "max-w-8xl relative mx-auto h-14 w-full px-4",
-          "grid grid-cols-[minmax(0,1fr)_auto] items-center justify-between",
-
-          "md:h-16 md:grid-cols-[minmax(0,1fr)_auto]"
+          "max-w-8xl relative mx-auto h-14 w-full px-4 md:h-16",
+          "flex items-center justify-between"
         )}>
         <div
           aria-hidden
@@ -41,21 +42,45 @@ export function SiteHeader({ account }: Readonly<{ account: AuthAccount | null }
 
         {/* <HeaderNav /> */}
 
-        <div className='flex items-center md:justify-between md:gap-2.5 md:justify-self-end'>
+        <div className='flex items-center justify-between max-md:w-full md:gap-4 md:justify-self-end'>
           <div className='flex gap-x-1'>
             <MobileNav />
             <HeaderSearch />
           </div>
 
-          <div className='flex grow justify-end'>
+          <div className='flex grow justify-end gap-x-4'>
             {account ? (
-              <AccountMenu
-                account={{
-                  displayName: account.profile?.displayName ?? account.username,
-                  email: account.email,
-                  avatar: account.profile.avatar
-                }}
-              />
+              <>
+                <Separator className='bg-white/5 max-sm:hidden' orientation='vertical' />
+
+                <Tooltip delay={0}>
+                  <Link href='/watch-histories'>
+                    <Button
+                      className='ring-foreground/5 size-10 rounded-lg ring-2'
+                      variant='ghost'
+                      isIconOnly>
+                      <HugeiconsIcon
+                        className='size-5'
+                        icon={Clock01Icon}
+                        strokeWidth={2}
+                      />
+                    </Button>
+                  </Link>
+
+                  <Tooltip.Content showArrow placement='bottom' offset={16}>
+                    <Tooltip.Arrow />
+                    <p>Watch History</p>
+                  </Tooltip.Content>
+                </Tooltip>
+
+                <AccountMenu
+                  account={{
+                    displayName: account.profile?.displayName ?? account.username,
+                    email: account.email,
+                    avatar: account.profile.avatar
+                  }}
+                />
+              </>
             ) : (
               <SignInButton />
             )}

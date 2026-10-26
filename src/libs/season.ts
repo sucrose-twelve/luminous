@@ -1,15 +1,4 @@
-import { SEASONALS } from "@/constants"
-import { SEASONAL_LABELS } from "@/constants/labels"
-
-/**
- * What an untitled season is called, by kind.
- */
-const SEASON_KIND_NAMES: Record<Content.SeasonKind, string> = {
-  season: "Season",
-  movie: "Movie",
-  special: "Specials",
-  spinoff: "Spinoff"
-}
+import { SEASON_KIND_NAMES, SEASONAL_LABELS, SEASONALS } from "@/constants"
 
 /**
  * A season's display name: `Season 2` for a numbered season, otherwise its title, or its kind when it has

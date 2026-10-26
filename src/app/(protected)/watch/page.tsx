@@ -1,6 +1,8 @@
 import type { Metadata } from "next"
 import { z } from "zod"
 
+import { clientInfo } from "@/actions/client"
+
 import {
   readContentEpisodes,
   readPreference,
@@ -9,7 +11,13 @@ import {
 } from "./actions/read"
 import { LmpLoader } from "./components/lmp/lmp-loader"
 import { WatchNotice } from "./components/watch-notice"
-import { pickTrack, toPlayerProps, watchTitle, withDefaultPreference } from "./utils"
+import {
+  browserNotice,
+  pickTrack,
+  toPlayerProps,
+  watchTitle,
+  withDefaultPreference
+} from "./utils"
 import { queryValidator } from "./validator.nuqs"
 
 /**
@@ -29,6 +37,10 @@ export async function generateMetadata({
 }
 
 export default async function Watch({ searchParams }: NextSearchParams) {
+  const { userAgent } = await clientInfo()
+  const unsupported = browserNotice(userAgent)
+  if (unsupported) return <WatchNotice kind={unsupported} />
+
   const { vid, audio, t } = queryValidator.parse(await searchParams)
   if (!vid || !z.uuid().safeParse(vid).success) return <WatchNotice kind='invalid-link' />
 

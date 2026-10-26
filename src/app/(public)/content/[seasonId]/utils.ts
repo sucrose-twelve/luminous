@@ -1,24 +1,6 @@
 import { seasonName } from "@/libs/season"
 
 /**
- * Content kinds spelled out for the hero's meta row; the browse cards use the short `KIND_LABELS`.
- */
-export const KIND_FULL_LABELS: Record<Content.Kind, string> = {
-  movie: "Movie",
-  anime_series: "Anime Series",
-  tv_series: "TV Series",
-  series: "Series",
-  shows: "Shows"
-}
-
-export const SEASON_KIND_LABELS: Record<Content.SeasonKind, string> = {
-  season: "Season",
-  movie: "The Movie",
-  special: "Special",
-  spinoff: "Spinoff"
-}
-
-/**
  * Chip colors of the sidebar cards, by season kind.
  */
 export const SEASON_KIND_CHIP_CLASSES: Record<Content.SeasonKind, string> = {
@@ -45,5 +27,5 @@ export function seasonTitle(
     title: string | null
   }>
 ) {
-  return season.title ?? `${contentTitle} • ${seasonName(season)}`
+  return `${contentTitle} • ${season.title ?? seasonName(season)}`
 }

@@ -1,4 +1,7 @@
-import { SkipBackIcon, SkipFrowardIcon } from "@/components/icons"
+import {
+  SkipBackIcon,
+  SkipFrowardIcon
+} from "@/app/(protected)/watch/components/lmp/icons"
 
 import type { LmpAdjacent } from "../types"
 import { episodeLabel, withEpisodeTitle } from "../utils"

@@ -7,10 +7,17 @@ import {
   parseAsStringLiteral
 } from "nuqs/server"
 
-import { KINDS, SEASON_STATUSES, SEASONALS, SOURCES } from "@/constants"
+import {
+  AUDIOS,
+  KINDS,
+  ORDERS,
+  PAGE_SIZES,
+  SEASON_STATUSES,
+  SEASONALS,
+  SORTS,
+  SOURCES
+} from "@/constants"
 import { GENRES } from "@/constants/data/genres"
-
-import { AUDIOS, ORDERS, PAGE_SIZES, SORTS } from "./validator.zod"
 
 /**
  * Search param parsers, shared by the server cache below and the client controls (`useBrowseQuery`) so both

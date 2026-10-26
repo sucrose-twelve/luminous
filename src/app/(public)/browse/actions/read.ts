@@ -10,6 +10,7 @@ import {
   gte,
   ilike,
   lt,
+  notInArray,
   or,
   sql,
   type SQL
@@ -17,13 +18,13 @@ import {
 import { pick } from "es-toolkit"
 import { z } from "zod"
 
-import { SEASONALS } from "@/constants"
+import { ADULT_KINDS, AUDIO_LANGUAGES, SEASONALS } from "@/constants"
 import { db, schema } from "@/drizzle"
 import { contentColumns, seasonColumns } from "@/drizzle/table-columns"
 import { lastPageOf, toPagination, withPagination } from "@/drizzle/utils"
 
 import { audiosOf, escapeLike, releasedRange } from "../utils"
-import { AUDIO_LANGUAGES, browseValidator, type BrowseValidator } from "../validator.zod"
+import { browseValidator, type BrowseValidator } from "../validator.zod"
 
 /**
  * Lists seasons (each with its content) for the browse page: filtered, sorted, and paginated.
@@ -123,7 +124,12 @@ function browseFilters({
 }: BrowseValidator) {
   const filters: SQL[] = []
 
-  if (kind) filters.push(eq(schema.contents.kind, kind))
+  if (kind) {
+    filters.push(eq(schema.contents.kind, kind))
+  } else {
+    filters.push(notInArray(schema.contents.kind, ADULT_KINDS))
+  }
+
   if (source) filters.push(eq(schema.contents.source, source))
   if (genres.length) filters.push(arrayContains(schema.contents.genres, genres))
   if (status) filters.push(eq(schema.seasons.status, status))

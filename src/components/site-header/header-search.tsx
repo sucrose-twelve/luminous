@@ -70,7 +70,7 @@ export function HeaderSearch() {
         isIconOnly
         variant='ghost'
         aria-label='Search'
-        className='size-11 rounded-xl text-white md:hidden'
+        className='size-11 rounded-lg text-white md:hidden'
         onPress={handleExpand}>
         <HugeiconsIcon className='size-5' icon={Search01Icon} strokeWidth={2} />
       </Button>
@@ -86,15 +86,15 @@ export function HeaderSearch() {
           aria-label='Search titles'
           name='search'
           variant='secondary'
-          className='grow md:w-58'
+          className='grow'
           onSubmit={handleSubmit}>
-          <SearchField.Group className='h-10 rounded-xl border border-white/6 bg-white/5'>
+          <SearchField.Group className='ring-foreground/5 h-10 rounded-lg bg-transparent ring-2'>
             <SearchField.SearchIcon className='text-zinc-400' />
             <SearchField.Input
               ref={inputRef}
               placeholder='Search titles'
               enterKeyHint='search'
-              className='placeholder:text-zinc-400'
+              className='placeholder:text-foreground/25 w-36'
             />
             <SearchField.ClearButton className='text-zinc-400' />
             <Kbd variant='light' className='me-2 max-md:hidden'>

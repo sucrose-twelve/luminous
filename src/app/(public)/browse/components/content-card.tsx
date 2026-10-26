@@ -4,8 +4,9 @@ import { Chip } from "@heroui/react"
 import { motion } from "framer-motion"
 import Image from "next/image"
 
-import { KIND_LABELS } from "@/constants/labels"
+import { SeasonStatus } from "@/components/season/status"
 import { seasonName } from "@/libs/season"
+import { cls } from "@/libs/utils"
 
 import type { BrowseItem } from "../actions/read"
 import { WatchLink } from "./watch-link"
@@ -19,7 +20,6 @@ export function ContentCard({
   item
 }: Readonly<{ index: number; item: BrowseItem }>) {
   const { season, content, audios } = item
-  const isDubbed = audios.some((audio) => audio.isDubbed)
 
   return (
     <motion.article
@@ -41,19 +41,17 @@ export function ContentCard({
         />
       </div>
 
+      <div className='pointer-events-none absolute inset-x-0 top-0 flex flex-wrap items-center gap-1 p-2'>
+        <SeasonStatus value={season.status} />
+
+        <Chip className='bg-foreground text-background' size='sm'>
+          <Chip.Label className='uppercase'>
+            {audios.map((audio) => audio.language.split("-")[1]).join(" • ")}
+          </Chip.Label>
+        </Chip>
+      </div>
+
       <div className='card-content-desc'>
-        <div className='flex justify-center gap-x-1 pb-1'>
-          <Chip className='bg-theme-500 text-theme-50' size='sm'>
-            <Chip.Label>{KIND_LABELS[content.kind]}</Chip.Label>
-          </Chip>
-
-          {isDubbed ? (
-            <Chip className='text-theme-50 bg-blue-500' size='sm'>
-              <Chip.Label>Dubbed</Chip.Label>
-            </Chip>
-          ) : null}
-        </div>
-
         <h2
           className='text-md line-clamp-1 font-bold sm:text-lg'
           title={content.title + (season?.title ? ` - ${season.title}` : "")}>

@@ -37,7 +37,7 @@ src/
 │   ├── error-boundary/   Error page that ErrorBoundary() redirects to
 │   ├── error.tsx, not-found.tsx, layout.tsx
 ├── components/           Shared UI used by 2+ routes (link.tsx, loader.tsx, svg.tsx, …)
-├── constants/            Enums, cookie names, metadata, fonts; env/ holds Zod-validated env
+├── constants/            Enums, cookie names, value lists + labels (<domain>.ts), metadata, fonts; env/
 ├── drizzle/              db client, schema/*.schema.ts, relations, types, table-columns, seeds, utils
 ├── hooks/                Shared client hooks, re-exported from hooks/index.ts
 ├── libs/                 Framework-agnostic helpers: cipher, logger, utils (cls), cache handlers
@@ -92,6 +92,13 @@ out of many can take it from search params instead: the watch page is `app/(prot
 | Not tied to React / Next at all | —                                 | —                           | `@/libs/`                |
 
 Start local. Promote to the shared folder the moment a second route needs it — move it, don't copy it.
+
+**Exception: value lists and their labels.** A fixed set of values (`SOURCES`, `HISTORY_SORTS`, `PAGE_SIZES`)
+and everything keyed by it (`SOURCE_LABELS`, `HISTORY_KIND_FILTERS`, `SORT_OPTIONS`) live together in
+`constants/<domain>.ts` (`content.ts`, `browse.ts`, `watch-history.ts`) and are imported from `@/constants`,
+even when one route uses them. Types derived from a list sit next to it (`HistoryKind`, `Seasonal`).
+Validators import the list; they don't define it. Styling maps (chip classes) and icon maps stay with the
+component or route `utils.ts` that renders them, and the player (`lmp/`) keeps its own constants.
 
 Shared actions are grouped by domain and always split into the four CRUD files: `read.ts`, `create.ts`,
 `update.ts`, `delete.ts`. Domain-specific verbs that don't fit CRUD (e.g. `sign-in.ts`) get their own

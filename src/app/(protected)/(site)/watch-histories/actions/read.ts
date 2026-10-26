@@ -1,9 +1,27 @@
-import { and, asc, count, desc, eq, inArray, isNotNull, sql, type SQL } from "drizzle-orm"
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  inArray,
+  isNotNull,
+  notInArray,
+  sql,
+  type SQL
+} from "drizzle-orm"
 import { alias } from "drizzle-orm/pg-core"
 import { pick } from "es-toolkit"
 import { z } from "zod"
 
 import { withAuth } from "@/actions/auth"
+import {
+  ADULT_KINDS,
+  HISTORY_KIND_FILTERS,
+  HISTORY_PAGE_SIZE,
+  ON_HOLD_AFTER_DAYS,
+  type HistoryStatus
+} from "@/constants"
 import { db, schema } from "@/drizzle"
 import {
   contentColumns,
@@ -13,13 +31,7 @@ import {
 } from "@/drizzle/table-columns"
 import { lastPageOf, toPagination, withPagination } from "@/drizzle/utils"
 
-import { HISTORY_KIND_FILTERS, ON_HOLD_AFTER_DAYS } from "../utils"
-import {
-  HISTORY_PAGE_SIZE,
-  historyValidator,
-  type HistoryStatus,
-  type HistoryValidator
-} from "../validator.zod"
+import { historyValidator, type HistoryValidator } from "../validator.zod"
 
 const nextEpisodes = alias(schema.episodes, "next_episodes")
 const nextSeasons = alias(schema.seasons, "next_seasons")
@@ -203,6 +215,8 @@ function historyFilters({ kind, status }: HistoryValidator) {
   const filters: SQL[] = []
 
   if (kind) filters.push(inArray(schema.contents.kind, HISTORY_KIND_FILTERS[kind]))
+  else filters.push(notInArray(schema.contents.kind, ADULT_KINDS))
+
   if (status) filters.push(sql`${historyStatus} = ${status}`)
 
   return filters

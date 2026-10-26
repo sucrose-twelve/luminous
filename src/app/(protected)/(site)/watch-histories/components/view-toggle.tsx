@@ -5,9 +5,9 @@ import { GridViewIcon, ListViewIcon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { useCallback, useMemo } from "react"
 
+import { HISTORY_VIEW_LABELS, HISTORY_VIEWS } from "@/constants"
+
 import { useHistoryQuery } from "../hooks/use-history-query"
-import { HISTORY_VIEW_LABELS } from "../utils"
-import { HISTORY_VIEWS } from "../validator.zod"
 
 const VIEW_ICONS = { grid: GridViewIcon, list: ListViewIcon } as const
 

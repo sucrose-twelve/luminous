@@ -9,7 +9,7 @@ import {
   CircleProgressPlayIcon,
   FastForwardIcon,
   MoreVerticalIcon
-} from "@/components/icons"
+} from "@/app/(protected)/watch/components/lmp/icons"
 import { languageName } from "@/libs/language"
 import { usePlayerStore } from "@/stores/player"
 

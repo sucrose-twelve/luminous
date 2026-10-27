@@ -1,9 +1,9 @@
 "use client"
 
+import { ChevronLeftIcon } from "@keyline-icons/react/fill"
 import NextLink from "next/link"
 import { Fragment, useCallback } from "react"
 
-import { ChevronLeftIcon } from "@/app/(protected)/watch/components/lmp/icons"
 import { cls } from "@/libs/utils"
 
 import { controlClass } from "./control-button"

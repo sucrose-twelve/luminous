@@ -44,7 +44,7 @@ async function main() {
           pathname.split(".")[0] + ".x264.mp4"
         ]
 
-        logger(`📄 "${file.name}" re-encode...`, n)
+        logger(`📄 "${file.name}" re-encoding...`, n)
         const process = spawn(["ffmpeg", ...args], {
           stdout: "ignore",
           stderr: "inherit",

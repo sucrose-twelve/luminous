@@ -1,15 +1,15 @@
 "use client"
 
-import { AnimatePresence, m, type Transition } from "framer-motion"
-import { useCallback, useEffect, useId, useRef } from "react"
-
 import {
   AudioLinesIcon,
   CheckIcon,
   CircleProgressPlayIcon,
   FastForwardIcon,
   MoreVerticalIcon
-} from "@/app/(protected)/watch/components/lmp/icons"
+} from "@keyline-icons/react/fill"
+import { AnimatePresence, m, type Transition } from "framer-motion"
+import { useCallback, useEffect, useId, useRef } from "react"
+
 import { languageName } from "@/libs/language"
 import { usePlayerStore } from "@/stores/player"
 

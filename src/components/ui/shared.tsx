@@ -1,4 +1,4 @@
-import { Button } from "@heroui/react"
+import { Button } from "@/components/ui/button"
 
 export function ContentHeader({
   icon,
@@ -38,10 +38,11 @@ export function ContentFooter({
       <div className='flex items-center justify-start gap-x-2'>
         {onClose ? (
           <Button
-            className='bg-foreground/5 text-foreground/75 rounded-sm'
+            className='bg-foreground/5 text-foreground/75 rounded-sm px-4'
             type='button'
             variant='secondary'
-            onPress={onClose}>
+            size='lg'
+            onClick={onClose}>
             <span className='uppercase'>close</span>
           </Button>
         ) : null}

@@ -1,25 +1,28 @@
-import { ProgressBar } from "@heroui/react"
+"use client"
+
+import { useCallback } from "react"
+
+import { Progress } from "@/components/ui/progress"
 
 import type { HistoryItem } from "../utils"
 
 /**
- * How far into the shown episode the account is, in the theme color. Screen readers hear the time
- * (`5 minutes of 24 minutes`) rather than a bare percentage.
+ * How far into the shown episode the account is, in the primary color. Screen readers hear the time
+ * (`5 minutes of 24 minutes`) rather than a bare percentage. That text comes from a function
+ * (`getAriaValueText`), which is why this is a Client Component.
  */
 export function HistoryProgress({
   item,
   className
 }: Readonly<{ item: HistoryItem; className?: string }>) {
+  const getAriaValueText = useCallback(() => item.spokenTime, [item.spokenTime])
+
   return (
-    <ProgressBar
+    <Progress
       className={className}
       aria-label='Watch progress'
-      size='sm'
       value={item.percent}
-      valueLabel={item.spokenTime}>
-      <ProgressBar.Track className='bg-foreground/10 rounded-full'>
-        <ProgressBar.Fill className='bg-theme rounded-full' />
-      </ProgressBar.Track>
-    </ProgressBar>
+      getAriaValueText={getAriaValueText}
+    />
   )
 }

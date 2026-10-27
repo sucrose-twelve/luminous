@@ -1,6 +1,5 @@
-import { Chip } from "@heroui/react"
-
 import { Link } from "@/components/link"
+import { Badge } from "@/components/ui/badge"
 import { HISTORY_STATUS_CHIPS } from "@/constants"
 import { cls } from "@/libs/utils"
 
@@ -12,7 +11,7 @@ import { RemoveButton } from "./remove-button"
 
 /**
  * One title in the grid view: picture with status and last-watched time, titles, the shown episode with its
- * progress, genres, and the actions. A completed title has no Continue button, only Remove.
+ * progress, and the actions. A completed title has no Continue button, only Remove.
  */
 export function HistoryGridCard({ item }: Readonly<{ item: HistoryItem }>) {
   return (
@@ -22,9 +21,7 @@ export function HistoryGridCard({ item }: Readonly<{ item: HistoryItem }>) {
         item={item}
         sizes='(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw'>
         <div className='from-background absolute inset-x-0 bottom-0 flex flex-col items-start gap-1 bg-linear-to-t to-transparent px-3 pt-10 pb-2'>
-          <Chip variant='primary' size='sm'>
-            {HISTORY_STATUS_CHIPS[item.status]}
-          </Chip>
+          <Badge>{HISTORY_STATUS_CHIPS[item.status]}</Badge>
           <p className='font-mono text-xs text-zinc-300'>
             Last watched: {item.watchedAgo}
           </p>
@@ -34,7 +31,7 @@ export function HistoryGridCard({ item }: Readonly<{ item: HistoryItem }>) {
       <div className='flex grow flex-col gap-3 p-4'>
         <div className='min-w-0'>
           <Link
-            className='hover:text-theme line-clamp-1 font-bold'
+            className='line-clamp-1 font-bold underline-offset-4 hover:underline'
             href={`/content/${item.seasonId}`}
             prefetch={false}>
             {item.title}
@@ -46,7 +43,9 @@ export function HistoryGridCard({ item }: Readonly<{ item: HistoryItem }>) {
 
         <div className='border-foreground/10 bg-foreground/2 flex flex-col gap-2 rounded-xl border p-3'>
           <div className='flex items-baseline justify-between gap-2 text-xs'>
-            <span className='text-theme line-clamp-1 font-bold' title={item.episodeLabel}>
+            <span
+              className='text-primary line-clamp-1 font-bold'
+              title={item.episodeLabel}>
               {item.episodeLabel}
             </span>
             <span className='shrink-0 font-mono text-zinc-400'>{item.time}</span>
@@ -58,18 +57,6 @@ export function HistoryGridCard({ item }: Readonly<{ item: HistoryItem }>) {
           ) : null}
           <HistoryProgress className='pt-1' item={item} />
         </div>
-
-        {item.genres.length ? (
-          <ul className='flex flex-wrap gap-1'>
-            {item.genres.map((genre) => (
-              <li key={genre}>
-                <Chip variant='primary' size='sm'>
-                  <Chip.Label>{genre}</Chip.Label>
-                </Chip>
-              </li>
-            ))}
-          </ul>
-        ) : null}
       </div>
 
       <div

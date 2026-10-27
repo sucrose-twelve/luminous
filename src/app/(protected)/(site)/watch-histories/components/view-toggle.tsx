@@ -1,10 +1,10 @@
 "use client"
 
-import { ToggleButton, ToggleButtonGroup, type Key } from "@heroui/react"
 import { GridViewIcon, ListViewIcon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { useCallback, useMemo } from "react"
 
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { HISTORY_VIEW_LABELS, HISTORY_VIEWS } from "@/constants"
 
 import { useHistoryQuery } from "../hooks/use-history-query"
@@ -13,15 +13,16 @@ const VIEW_ICONS = { grid: GridViewIcon, list: ListViewIcon } as const
 
 /**
  * Switches the cards between grid and list. The view is rendered on the server, so a switch is a server
- * round-trip that keeps the current page.
+ * round-trip that keeps the current page. Pressing the current view again changes nothing (Base UI would
+ * empty the group).
  */
 export function ViewToggle() {
   const { query, update } = useHistoryQuery()
-  const selectedKeys = useMemo(() => [query.view], [query.view])
+  const value = useMemo(() => [query.view], [query.view])
 
   const handleChange = useCallback(
-    (keys: Set<Key>) => {
-      const [key] = keys
+    (values: string[]) => {
+      const [key] = values
       const view = HISTORY_VIEWS.find((value) => value === key)
       if (view && view !== query.view) update({ view })
     },
@@ -29,24 +30,20 @@ export function ViewToggle() {
   )
 
   return (
-    <ToggleButtonGroup
+    <ToggleGroup
       aria-label='View'
       className='bg-foreground/5 shrink-0 gap-0.5 rounded-lg p-1'
-      isDetached
-      disallowEmptySelection
-      selectionMode='single'
-      selectedKeys={selectedKeys}
-      onSelectionChange={handleChange}>
+      value={value}
+      onValueChange={handleChange}>
       {HISTORY_VIEWS.map((view) => (
-        <ToggleButton
+        <ToggleGroupItem
           key={view}
-          className='data-[hovered=true]:text-foreground data-[selected=true]:bg-theme/15 data-[selected=true]:text-theme size-7 min-w-0 rounded-md bg-transparent text-zinc-400'
-          id={view}
-          isIconOnly
+          className='hover:text-foreground aria-pressed:bg-primary/15 aria-pressed:text-primary aria-pressed:hover:bg-primary/15 size-7 min-w-0 rounded-md bg-transparent px-0 text-zinc-400 hover:bg-transparent'
+          value={view}
           aria-label={HISTORY_VIEW_LABELS[view]}>
-          <HugeiconsIcon icon={VIEW_ICONS[view]} size={16} strokeWidth={1.8} />
-        </ToggleButton>
+          <HugeiconsIcon icon={VIEW_ICONS[view]} strokeWidth={1.8} />
+        </ToggleGroupItem>
       ))}
-    </ToggleButtonGroup>
+    </ToggleGroup>
   )
 }

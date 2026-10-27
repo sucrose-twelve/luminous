@@ -1,7 +1,8 @@
 # Project Structure
 
-Path alias: `@/*` → `./src/*`. Always import across folders with `@/`; use relative imports only inside the
-same feature folder (e.g. a page importing its own `./validator.nuqs`).
+Path alias: `@/*` → `./src/*`. Always import across folders with `@/`; use relative
+imports only inside the same feature folder (e.g. a page importing its own
+`./validator.nuqs`).
 
 ## Repo root
 
@@ -12,11 +13,12 @@ same feature folder (e.g. a page importing its own `./validator.nuqs`).
 | `notes/`  | The owner's notes and plans                                                                                                        |
 | `public/` | Static files only. Never media                                                                                                     |
 
-`tests/` holds one-off and maintenance scripts run with bun from the repo root: account creation
-(`tests/account.spec.ts`), media import, ffmpeg helpers, and quick experiments. Name them `<topic>.spec.ts`; a
-script too big for one file keeps its entry there and its parts in `tests/<topic>s/` (`tests/track.spec.ts` +
-`tests/tracks/*.ts`). They may import from `@/…`, and must end the DB connection (`db.$client.end()`) so the
-process exits. **Don't write unit/integration tests** or add a test runner unless the owner asks.
+`tests/` holds one-off and maintenance scripts run with bun from the repo root: account
+creation (`tests/account.spec.ts`), media import, ffmpeg helpers, and quick experiments.
+Name them `<topic>.spec.ts`; a script too big for one file keeps its entry there and its
+parts in `tests/<topic>s/` (`tests/track.spec.ts` + `tests/tracks/*.ts`). They may import
+from `@/…`, and must end the DB connection (`db.$client.end()`) so the process exits.
+**Don't write unit/integration tests** or add a test runner unless the owner asks.
 
 ## Top level of `src/`
 
@@ -37,10 +39,11 @@ src/
 │   ├── error-boundary/   Error page that ErrorBoundary() redirects to
 │   ├── error.tsx, not-found.tsx, layout.tsx
 ├── components/           Shared UI used by 2+ routes (link.tsx, loader.tsx, svg.tsx, …)
+│   └── ui/               shadcn/ui components, one flat <name>.tsx each, added by the CLI (ui-components.md)
 ├── constants/            Enums, cookie names, value lists + labels (<domain>.ts), metadata, fonts; env/
 ├── drizzle/              db client, schema/*.schema.ts, relations, types, table-columns, seeds, utils
 ├── hooks/                Shared client hooks, re-exported from hooks/index.ts
-├── libs/                 Framework-agnostic helpers: cipher, logger, utils (cls), cache handlers
+├── libs/                 Framework-agnostic helpers: cipher, logger, utils (cls, and cn for shadcn), cache handlers
 ├── stores/<name>/        zustand store: state.ts (createXStore) + index.tsx (Provider + hook)
 ├── styles/               globals.css, theme.css (@theme tokens), custom.css (@layer components)
 └── types/app.d.ts        Global ambient types (declare type …)
@@ -48,21 +51,22 @@ src/
 
 ## `(labs)` — test UIs
 
-When you need a UI just to try something out (call a Server Action, check an API route, poke the player), put
-it under `src/app/(labs)/<name>/page.tsx`, e.g. `(labs)/sign-in/page.tsx` to exercise `signIn` before the real
-modal exists.
+When you need a UI just to try something out (call a Server Action, check an API route,
+poke the player), put it under `src/app/(labs)/<name>/page.tsx`, e.g.
+`(labs)/sign-in/page.tsx` to exercise `signIn` before the real modal exists.
 
-- **Plain HTML only**: `<form>`, `<input>`, `<button>`, `<pre>`. No Tailwind classes, no styling, no design
-  work.
-- It doesn't follow the `/browse` folder pattern, and it skips the performance and polish rules. Keep it to
-  one file when possible.
-- It reuses the real actions and readers. Never put logic in a lab that the real feature will need: put that
-  in `@/actions` / `@/libs` and call it from the lab.
+- **Plain HTML only**: `<form>`, `<input>`, `<button>`, `<pre>`. No Tailwind classes, no
+  styling, no design work.
+- It doesn't follow the `/browse` folder pattern, and it skips the performance and polish
+  rules. Keep it to one file when possible.
+- It reuses the real actions and readers. Never put logic in a lab that the real feature
+  will need: put that in `@/actions` / `@/libs` and call it from the lab.
 - Labs are dev tools, not features. Don't link to them from the app.
 
 ## Route folder layout (the `/browse` pattern)
 
-Every page folder follows the same shape. Create only the files you need, but use these names:
+Every page folder follows the same shape. Create only the files you need, but use these
+names:
 
 ```
 app/(public)/browse/
@@ -79,9 +83,10 @@ app/(public)/browse/
 └── validator.zod.ts      Form / action input schema: formValidator / FormValidator
 ```
 
-Dynamic segments nest the same structure: `app/(public)/contents/[slug]/page.tsx`. A page that shows one item
-out of many can take it from search params instead: the watch page is `app/(protected)/watch/page.tsx` with
-`?vid=<trackId>`. Scaffold with `bun .claude/skills/web-stack/scripts/new-route.ts <group> <segment>`.
+Dynamic segments nest the same structure: `app/(public)/contents/[slug]/page.tsx`. A page
+that shows one item out of many can take it from search params instead: the watch page is
+`app/(protected)/watch/page.tsx` with `?vid=<trackId>`. Scaffold with
+`bun .claude/skills/web-stack/scripts/new-route.ts <group> <segment>`.
 
 ## Local vs shared — where does it go?
 
@@ -91,18 +96,21 @@ out of many can take it from search params instead: the watch page is `app/(prot
 | Two or more routes              | `@/actions/<domain>/<crud>.ts`    | `@/components/`             | `@/hooks/` or `@/libs/`  |
 | Not tied to React / Next at all | —                                 | —                           | `@/libs/`                |
 
-Start local. Promote to the shared folder the moment a second route needs it — move it, don't copy it.
+Start local. Promote to the shared folder the moment a second route needs it — move it,
+don't copy it.
 
-**Exception: value lists and their labels.** A fixed set of values (`SOURCES`, `HISTORY_SORTS`, `PAGE_SIZES`)
-and everything keyed by it (`SOURCE_LABELS`, `HISTORY_KIND_FILTERS`, `SORT_OPTIONS`) live together in
-`constants/<domain>.ts` (`content.ts`, `browse.ts`, `watch-history.ts`) and are imported from `@/constants`,
-even when one route uses them. Types derived from a list sit next to it (`HistoryKind`, `Seasonal`).
-Validators import the list; they don't define it. Styling maps (chip classes) and icon maps stay with the
-component or route `utils.ts` that renders them, and the player (`lmp/`) keeps its own constants.
+**Exception: value lists and their labels.** A fixed set of values (`SOURCES`,
+`HISTORY_SORTS`, `PAGE_SIZES`) and everything keyed by it (`SOURCE_LABELS`,
+`HISTORY_KIND_FILTERS`, `SORT_OPTIONS`) live together in `constants/<domain>.ts`
+(`content.ts`, `browse.ts`, `watch-history.ts`) and are imported from `@/constants`, even
+when one route uses them. Types derived from a list sit next to it (`HistoryKind`,
+`Seasonal`). Validators import the list; they don't define it. Styling maps (chip classes)
+and icon maps stay with the component or route `utils.ts` that renders them, and the
+player (`lmp/`) keeps its own constants.
 
-Shared actions are grouped by domain and always split into the four CRUD files: `read.ts`, `create.ts`,
-`update.ts`, `delete.ts`. Domain-specific verbs that don't fit CRUD (e.g. `sign-in.ts`) get their own
-kebab-case file in the domain folder.
+Shared actions are grouped by domain and always split into the four CRUD files: `read.ts`,
+`create.ts`, `update.ts`, `delete.ts`. Domain-specific verbs that don't fit CRUD (e.g.
+`sign-in.ts`) get their own kebab-case file in the domain folder.
 
 ## Suggested domains for this app
 
@@ -128,14 +136,15 @@ Use these names so features land in predictable places:
 | Route groups      | `(public)`, `(protected)`          |                                         |
 | Global types      | `src/types/*.d.ts`, `declare type` | `AuthToken`, `NextSearchParams`         |
 
-**Every file and folder name is kebab-case**: components, hooks, stores, utils, and scripts alike
-(`playlist-drawer.tsx`, `use-media-source.ts`, `track.spec.ts`). The only exceptions are names the framework
-fixes (`page.tsx`, `layout.tsx`, `route.ts`, `next.config.ts`, …) and the dotted suffixes in the table above
-(`.zod`, `.nuqs`, `.schema`, `.spec`). This is about file names only: exported identifiers stay camelCase /
+**Every file and folder name is kebab-case**: components, hooks, stores, utils, and
+scripts alike (`playlist-drawer.tsx`, `use-media-source.ts`, `track.spec.ts`). The only
+exceptions are names the framework fixes (`page.tsx`, `layout.tsx`, `route.ts`,
+`next.config.ts`, …) and the dotted suffixes in the table above (`.zod`, `.nuqs`,
+`.schema`, `.spec`). This is about file names only: exported identifiers stay camelCase /
 PascalCase (`useMediaSource`, `PlaylistPanel`).
 
 ## Barrels
 
-Only `hooks/index.ts` and `constants/index.ts` are barrels. Don't add `index.ts` re-exports elsewhere — they
-blur the server/client boundary and hurt tree-shaking. `actions/auth/index.ts` is the `withAuth` module, not a
-barrel.
+Only `hooks/index.ts` and `constants/index.ts` are barrels. Don't add `index.ts`
+re-exports elsewhere — they blur the server/client boundary and hurt tree-shaking.
+`actions/auth/index.ts` is the `withAuth` module, not a barrel.

@@ -1,11 +1,8 @@
 "use client"
 
+import { ChevronLeftIcon, ListVideoIcon } from "@keyline-icons/react/fill"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
-import {
-  ChevronLeftIcon,
-  ListVideoIcon
-} from "@/app/(protected)/watch/components/lmp/icons"
 import type { Locales } from "@/constants/enum"
 import { seasonName } from "@/libs/season"
 import { usePlayerStore } from "@/stores/player"
@@ -143,8 +140,7 @@ function PlaylistContent({
           </select>
           <ChevronLeftIcon
             aria-hidden
-            width={16}
-            height={16}
+            size={16}
             className='pointer-events-none absolute top-1/2 right-3.5 -translate-y-1/2 -rotate-90 text-white/60'
           />
         </div>

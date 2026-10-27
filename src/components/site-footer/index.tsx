@@ -28,7 +28,7 @@ export function SiteFooter() {
       <div className='max-w-8xl relative mx-auto flex flex-col gap-6 overflow-hidden px-4 py-8 sm:gap-10 sm:px-8'>
         <div
           aria-hidden
-          className='via-theme/75 absolute top-0 left-[8%] h-px w-1/2 bg-linear-to-r from-transparent to-transparent'
+          className='via-primary/75 absolute top-0 left-[8%] h-px w-1/2 bg-linear-to-r from-transparent to-transparent'
         />
 
         <div className='flex flex-wrap items-center justify-between gap-4'>

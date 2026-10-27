@@ -7,19 +7,16 @@ import { useCallback, useMemo } from "react"
 import { useLoader } from "@/hooks"
 import { cls } from "@/libs/utils"
 
+/**
+ * `next/link` that starts the top loader bar. Other props (`ref`, `aria-*`, handlers) pass through, so it can
+ * be the `render` element of a Base UI part, such as a tooltip trigger.
+ */
 export function Link({
   href,
-  children,
   className,
-  prefetch,
-  "aria-current": ariaCurrent
-}: Readonly<{
-  "href": string
-  "children"?: React.ReactNode
-  "className"?: string
-  "prefetch"?: boolean
-  "aria-current"?: "page"
-}>) {
+  onClick,
+  ...props
+}: Readonly<Omit<React.ComponentProps<typeof NextLink>, "href"> & { href: string }>) {
   const loader = useLoader()
   const pathname = usePathname()
   /**
@@ -27,18 +24,15 @@ export function Link({
    */
   const isActive = useMemo(() => pathname === href, [pathname, href])
 
-  const handleClick = useCallback(() => {
-    if (!isActive) loader.on()
-  }, [isActive, loader])
+  const handleClick = useCallback(
+    (event: React.MouseEvent<HTMLAnchorElement>) => {
+      if (!isActive) loader.on()
+      onClick?.(event)
+    },
+    [isActive, loader, onClick]
+  )
 
   return (
-    <NextLink
-      className={cls(className)}
-      href={href}
-      prefetch={prefetch}
-      aria-current={ariaCurrent}
-      onClick={handleClick}>
-      {children}
-    </NextLink>
+    <NextLink {...props} className={cls(className)} href={href} onClick={handleClick} />
   )
 }

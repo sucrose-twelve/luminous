@@ -6,6 +6,12 @@ export function cls(...inputs: ClassValue[]) {
 }
 
 /**
+ * `cls` under the name shadcn/ui and Animate UI components import (`components.json` points their `utils`
+ * alias here). Write `cls` in project code.
+ */
+export { cls as cn }
+
+/**
  * Pads a number to two digits, e.g. `pad2(5) // "05"`.
  */
 export const pad2 = (value: number) => String(value).padStart(2, "0")

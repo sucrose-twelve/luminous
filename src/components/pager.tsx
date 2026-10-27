@@ -1,7 +1,16 @@
 "use client"
 
-import { Pagination } from "@heroui/react"
+import { ArrowLeft01Icon, ArrowRight01Icon } from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
 import { useEffect, useMemo } from "react"
+
+import { Button } from "@/components/ui/button"
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem
+} from "@/components/ui/pagination"
 
 /**
  * Elements that use the arrow keys themselves (text fields, menus, sliders, radio groups, an open drawer), so
@@ -47,7 +56,10 @@ function pageNumbers(current: number, last: number) {
  *
  * On desktop `←` / `→` go to the previous / next page. A held key (`repeat`) and a key pressed while the last
  * change is still loading (`isPending`) are ignored, so one press moves exactly one page. On mobile the page
- * links are replaced by a `current / last` label.
+ * buttons are replaced by a `current / last` label.
+ *
+ * The controls are buttons, not shadcn's `PaginationLink`: that one renders an `<a>`, and the page changes
+ * through `onChange`, not an `href`.
  */
 export function Pager({
   currentPage,
@@ -92,47 +104,61 @@ export function Pager({
   if (lastPage <= 1) return null
 
   return (
-    <Pagination className='justify-center'>
-      <Pagination.Content className='gap-2'>
-        <Pagination.Item>
-          <Pagination.Previous
-            isDisabled={prevPage === null}
-            onPress={() => prevPage && onChange(prevPage)}>
-            <Pagination.PreviousIcon />
-            <span>Prev</span>
-          </Pagination.Previous>
-        </Pagination.Item>
+    <Pagination>
+      <PaginationContent className='gap-2'>
+        <PaginationItem>
+          <Button
+            variant='ghost'
+            size='lg'
+            disabled={prevPage === null}
+            onClick={() => prevPage && onChange(prevPage)}>
+            <HugeiconsIcon
+              icon={ArrowLeft01Icon}
+              strokeWidth={2}
+              data-icon='inline-start'
+            />
+            Prev
+          </Button>
+        </PaginationItem>
 
         {pages.map((page, index) =>
           page === "ellipsis" ? (
-            <Pagination.Item key={`ellipsis-${index}`} className='max-sm:hidden'>
-              <Pagination.Ellipsis />
-            </Pagination.Item>
+            <PaginationItem key={`ellipsis-${index}`} className='max-sm:hidden'>
+              <PaginationEllipsis />
+            </PaginationItem>
           ) : (
-            <Pagination.Item key={page} className='max-sm:hidden'>
-              <Pagination.Link
-                className='data-[active=true]:bg-theme data-[active=true]:text-background font-bold'
-                isActive={page === currentPage}
-                onPress={() => onChange(page)}>
+            <PaginationItem key={page} className='max-sm:hidden'>
+              <Button
+                variant={page === currentPage ? "default" : "ghost"}
+                size='icon-lg'
+                className='font-bold'
+                aria-current={page === currentPage ? "page" : undefined}
+                onClick={() => onChange(page)}>
                 {page}
-              </Pagination.Link>
-            </Pagination.Item>
+              </Button>
+            </PaginationItem>
           )
         )}
 
-        <Pagination.Item className='px-2 font-bold tabular-nums sm:hidden'>
+        <PaginationItem className='px-2 font-bold tabular-nums sm:hidden'>
           {currentPage} / {lastPage}
-        </Pagination.Item>
+        </PaginationItem>
 
-        <Pagination.Item>
-          <Pagination.Next
-            isDisabled={nextPage === null}
-            onPress={() => nextPage && onChange(nextPage)}>
-            <span>Next</span>
-            <Pagination.NextIcon />
-          </Pagination.Next>
-        </Pagination.Item>
-      </Pagination.Content>
+        <PaginationItem>
+          <Button
+            variant='ghost'
+            size='lg'
+            disabled={nextPage === null}
+            onClick={() => nextPage && onChange(nextPage)}>
+            Next
+            <HugeiconsIcon
+              icon={ArrowRight01Icon}
+              strokeWidth={2}
+              data-icon='inline-end'
+            />
+          </Button>
+        </PaginationItem>
+      </PaginationContent>
     </Pagination>
   )
 }

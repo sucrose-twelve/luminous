@@ -25,7 +25,7 @@ export function HistoryListItem({ item }: Readonly<{ item: HistoryItem }>) {
 
       <div className='flex min-w-0 flex-col gap-1'>
         <Link
-          className='hover:text-theme line-clamp-1 font-bold'
+          className='line-clamp-1 font-bold underline-offset-4 hover:underline'
           href={`/content/${item.seasonId}`}
           prefetch={false}>
           {item.title}
@@ -36,7 +36,7 @@ export function HistoryListItem({ item }: Readonly<{ item: HistoryItem }>) {
 
         <p className='flex flex-wrap items-center gap-x-2 text-xs text-zinc-300'>
           <span className='line-clamp-1'>
-            <span className='text-theme font-bold'>{item.episodeLabel}</span>
+            <span className='text-primary font-bold'>{item.episodeLabel}</span>
             {item.episodeTitle ? <> - &quot;{item.episodeTitle}&quot;</> : null}
           </span>
           <span aria-hidden className='text-zinc-500'>

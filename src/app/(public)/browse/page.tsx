@@ -59,7 +59,7 @@ export default async function Browse({ searchParams }: NextSearchParams) {
         <div className='flex flex-col items-center gap-y-3 py-32 text-center'>
           <p className='text-lg font-bold'>No contents match these filters</p>
           <Link
-            className='text-theme text-sm font-bold underline-offset-4 hover:underline'
+            className='text-primary text-sm font-bold underline-offset-4 hover:underline'
             href='/browse'>
             Clear all filters
           </Link>

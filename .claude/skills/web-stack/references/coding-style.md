@@ -2,7 +2,8 @@
 
 ## Formatting (Prettier does it — don't fight it)
 
-`prettier.config.mjs` is the source of truth. Run `bunx prettier --write <files>` after editing. Key results:
+`prettier.config.mjs` is the source of truth. Run `bunx prettier --write <files>` after
+editing. Key results:
 
 - No semicolons. Double quotes in TS (`"use server"`), **single quotes in JSX attributes**
   (`className='flex gap-4'`).
@@ -30,24 +31,25 @@ import { queryValidator } from "./validator.nuqs"
 import "@/styles/globals.css"
 ```
 
-Sorting is done by `@ianvs/prettier-plugin-sort-imports`; the groups come from `importOrder` in
-`prettier.config.mjs`. Two behaviours to know:
+Sorting is done by `@ianvs/prettier-plugin-sort-imports`; the groups come from
+`importOrder` in `prettier.config.mjs`. Two behaviours to know:
 
-- **Side-effect imports (`import "…css"`) are never moved**, and imports aren't sorted across them. Write CSS
-  imports last yourself.
+- **Side-effect imports (`import "…css"`) are never moved**, and imports aren't sorted
+  across them. Write CSS imports last yourself.
 - Duplicate imports from the same module are merged into one statement.
 
-Don't switch back to `@trivago/prettier-plugin-sort-imports`: v6 with Prettier 3.9 duplicated every import
-(4×), including inside Markdown code blocks.
+Don't switch back to `@trivago/prettier-plugin-sort-imports`: v6 with Prettier 3.9
+duplicated every import (4×), including inside Markdown code blocks.
 
 ## TypeScript
 
 - `strict` + `verbatimModuleSyntax`: type-only imports **must** use `import type { X }` or
   `import { type X }`.
-- No `any`. Use `unknown` and narrow, or infer from the source of truth: `z.infer<typeof schema>`,
-  `InferSelectModel<typeof table>`, `Awaited<ReturnType<typeof queryValidator.parse>>`.
-- Types live next to what produces them: Zod types in `validator.zod.ts`, DB types in `drizzle/types.ts`,
-  app-wide ambient types in `src/types/app.d.ts` (`declare type`).
+- No `any`. Use `unknown` and narrow, or infer from the source of truth:
+  `z.infer<typeof schema>`, `InferSelectModel<typeof table>`,
+  `Awaited<ReturnType<typeof queryValidator.parse>>`.
+- Types live next to what produces them: Zod types in `validator.zod.ts`, DB types in
+  `drizzle/types.ts`, app-wide ambient types in `src/types/app.d.ts` (`declare type`).
 - Props are typed inline and wrapped in `Readonly<{ … }>`:
 
 ```tsx
@@ -62,9 +64,10 @@ export function Link({
 }>) {
 ```
 
-- Page/layout props use the global helpers: `NextSearchParams`, `NextParams<{ slug: string }>`.
-- `type` over `interface`. String enums (`export enum Theme { DARK = "dark" }`) for fixed sets in
-  `constants/enum.ts`.
+- Page/layout props use the global helpers: `NextSearchParams`,
+  `NextParams<{ slug: string }>`.
+- `type` over `interface`. String enums (`export enum Theme { DARK = "dark" }`) for fixed
+  sets in `constants/enum.ts`.
 - Numeric separators for readability: `5_000`, `3_600_000`.
 
 ## Naming
@@ -86,8 +89,9 @@ export function Link({
 ## Exports
 
 - Named exports for everything shared (`export function Link`).
-- `export default` only where Next.js requires it (`page`, `layout`, `error`, `not-found`, `loading`, route
-  config) and for modules loaded with `next/dynamic` (e.g. `components/loader.tsx`).
+- `export default` only where Next.js requires it (`page`, `layout`, `error`, `not-found`,
+  `loading`, route config) and for modules loaded with `next/dynamic` (e.g.
+  `components/loader.tsx`).
 
 ## Comments
 
@@ -112,16 +116,16 @@ Not:
 ```
 
 - Comment the **why** (constraints, trade-offs, non-obvious behaviour), not the what.
-- Public helpers in `libs/` and `actions/` get JSDoc with `@param`, `@returns`, and an `@example` when usage
-  isn't obvious (see `libs/cipher.ts`, `libs/logger.ts`).
+- Public helpers in `libs/` and `actions/` get JSDoc with `@param`, `@returns`, and an
+  `@example` when usage isn't obvious (see `libs/cipher.ts`, `libs/logger.ts`).
 - No commented-out code and no `TODO` in finished work.
 
 ## Component and hook body order
 
 Order inside a component or hook, unless there's a reason to deviate:
 
-1. **State** — props destructuring, store selectors, `useState`, `useRef`, derived values (`useMemo`), other
-   hooks (`usePathname`, `useLoader`).
+1. **State** — props destructuring, store selectors, `useState`, `useRef`, derived values
+   (`useMemo`), other hooks (`usePathname`, `useLoader`).
 2. **Functions** — handlers and callbacks (`useCallback`), then effects (`useEffect`).
 3. **Render / return** — early returns first (`if (!visible) return null`), then JSX.
 
@@ -147,31 +151,42 @@ export function EpisodeCard({ episode }: Readonly<{ episode: EpisodeCardData }>)
 
 ## React rules
 
-- Server Components by default. Add `"use client"` only to the leaf that needs state, effects, or browser APIs
-  — never to a page or layout.
-- **No React Compiler.** Memoize manually: `useCallback` for handlers passed to children or used in effects,
-  `useMemo` for derived objects/arrays and for objects returned from hooks (see `useLoader`).
-- Dependency arrays must be complete. A missing dependency is a stale-closure bug, not a style choice.
+- Server Components by default. Add `"use client"` only to the leaf that needs state,
+  effects, or browser APIs — never to a page or layout.
+- **No React Compiler.** Memoize manually: `useCallback` for handlers passed to children
+  or used in effects, `useMemo` for derived objects/arrays and for objects returned from
+  hooks (see `useLoader`).
+- Dependency arrays must be complete. A missing dependency is a stale-closure bug, not a
+  style choice.
 - Clean up every effect: listeners, intervals, timeouts, observers, `AbortController`.
-- Don't use `useEffect` to derive state from props — compute it during render or with `useMemo`.
+- Don't use `useEffect` to derive state from props — compute it during render or with
+  `useMemo`.
 - Keys are stable IDs from the DB, never array indexes for dynamic lists.
-- Context is rendered as `<StoreContext value={…}>` (React 19), not `<StoreContext.Provider>`.
+- Context is rendered as `<StoreContext value={…}>` (React 19), not
+  `<StoreContext.Provider>`.
 
 ## Styling
 
-- Tailwind utilities in JSX; merge conditional classes with `cls()` from `@/libs/utils` (clsx +
-  tailwind-merge).
-- Design tokens (colors, spacing, animations, keyframes) go in `src/styles/theme.css` under `@theme`, then use
-  them as utilities (`bg-background`, `animate-loader`, `max-w-8xl`).
-- Reusable multi-utility patterns go in `src/styles/custom.css` under `@layer components` (e.g.
-  `.use-mirror`).
-- The app is dark-first (`colorScheme: "dark"`). Use `bg-background` / `text-foreground`, zinc for muted text.
-- Use `svh`/`dvh` units for full-height layouts (`min-h-svh`) so mobile browser chrome doesn't cause jumps.
+- Tailwind utilities in JSX; merge conditional classes with `cls()` from `@/libs/utils`
+  (clsx + tailwind-merge). The `cn` exported beside it is only the name shadcn's generated
+  components import.
+- Design tokens go in `src/styles/theme.css`: colours in the shadcn-style `:root, .dark`
+  block mapped by `@theme inline`, everything else (spacing, animations, keyframes) under
+  `@theme`. Use them as utilities (`bg-background`, `bg-primary`, `animate-loader`,
+  `max-w-8xl`).
+- Reusable multi-utility patterns go in `src/styles/custom.css` under `@layer components`
+  (e.g. `.use-mirror`).
+- The app is dark-only (`colorScheme: "dark"`). Use `bg-background` / `text-foreground`,
+  zinc for muted text. Primary is white: `bg-primary text-primary-foreground` for
+  emphasis. There is no brand hue.
+- Use `svh`/`dvh` units for full-height layouts (`min-h-svh`) so mobile browser chrome
+  doesn't cause jumps.
 
 ## Errors
 
-- Server-side auth / access failures call `ErrorBoundary("<status> <message>")` from `@/actions/error`, which
-  logs and redirects to `/error-boundary`. Messages start with the HTTP status: `"401 Unauthorized"`,
+- Server-side auth / access failures call `ErrorBoundary("<status> <message>")` from
+  `@/actions/error`, which logs and redirects to `/error-boundary`. Messages start with
+  the HTTP status: `"401 Unauthorized"`,
   `"423 Your account has been temporarily suspended"`.
 - Expected validation failures in Server Actions are **returned**, not thrown:
   `return { ok: false, errors: z.flattenError(error).fieldErrors }`.
@@ -180,7 +195,8 @@ export function EpisodeCard({ episode }: Readonly<{ episode: EpisodeCardData }>)
 
 ## Environment variables
 
-Read env only through `@/constants/env` (`ENV`, `DB`, `CIPHER`, `REDIS`, `DATABASE_URL`), which are parsed by
-Zod in `constants/env/validator.zod.ts`. When adding a variable: add it to `.env.example`, add it to the Zod
-schema with a sensible default, export it from `constants/env/index.ts`. Never import `@/constants/env` from a
-Client Component — only `NEXT_PUBLIC_*` values are allowed on the client.
+Read env only through `@/constants/env` (`ENV`, `DB`, `CIPHER`, `REDIS`, `DATABASE_URL`),
+which are parsed by Zod in `constants/env/validator.zod.ts`. When adding a variable: add
+it to `.env.example`, add it to the Zod schema with a sensible default, export it from
+`constants/env/index.ts`. Never import `@/constants/env` from a Client Component — only
+`NEXT_PUBLIC_*` values are allowed on the client.

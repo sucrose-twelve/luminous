@@ -41,15 +41,15 @@ media library.
 
 ## Tech stack
 
-| Layer                     | Tools                                                  |
-| ------------------------- | ------------------------------------------------------ |
-| Runtime / package manager | Bun 1.4 (plus Node.js 24 for the production server)    |
-| Framework                 | Next.js 16 (App Router, Cache Components), React 19    |
-| UI                        | HeroUI v3, Tailwind CSS v4, Hugeicons, Motion          |
-| Database                  | PostgreSQL + Drizzle ORM 1.0 (rc)                      |
-| Cache                     | Redis (the cache handler behind `"use cache: remote"`) |
-| Validation / state        | Zod v4, nuqs, react-hook-form, zustand                 |
-| Media tools               | FFmpeg / ffprobe, Video2X (optional)                   |
+| Layer                     | Tools                                                               |
+| ------------------------- | ------------------------------------------------------------------- |
+| Runtime / package manager | Bun 1.4 (plus Node.js 24 for the production server)                 |
+| Framework                 | Next.js 16 (App Router, Cache Components), React 19                 |
+| UI                        | shadcn/ui (Base UI), Animate UI, Tailwind CSS v4, Hugeicons, Motion |
+| Database                  | PostgreSQL + Drizzle ORM 1.0 (rc)                                   |
+| Cache                     | Redis (the cache handler behind `"use cache: remote"`)              |
+| Validation / state        | Zod v4, nuqs, react-hook-form, zustand                              |
+| Media tools               | FFmpeg / ffprobe, Video2X (optional)                                |
 
 ## Requirements
 

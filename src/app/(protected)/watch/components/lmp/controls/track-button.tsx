@@ -1,7 +1,4 @@
-import {
-  SkipBackIcon,
-  SkipFrowardIcon
-} from "@/app/(protected)/watch/components/lmp/icons"
+import { SkipBackIcon, SkipForwardIcon } from "@keyline-icons/react/fill"
 
 import type { LmpAdjacent } from "../types"
 import { episodeLabel, withEpisodeTitle } from "../utils"
@@ -32,7 +29,7 @@ export function TrackButton({
       title={title}
       isDisabled={!target}
       onPress={() => target && onGo(target)}>
-      {isNext ? <SkipFrowardIcon /> : <SkipBackIcon />}
+      {isNext ? <SkipForwardIcon /> : <SkipBackIcon />}
     </ControlButton>
   )
 }

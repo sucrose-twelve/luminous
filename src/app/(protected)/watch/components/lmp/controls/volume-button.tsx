@@ -1,10 +1,7 @@
 "use client"
 
-import {
-  VolumeIcon,
-  VolumeLowIcon,
-  VolumeOffIcon
-} from "@/app/(protected)/watch/components/lmp/icons"
+import { VolumeIcon, VolumeLowIcon, VolumeOffIcon } from "@keyline-icons/react/fill"
+
 import { usePlayerStore } from "@/stores/player"
 
 import type { LmpActions } from "../types"

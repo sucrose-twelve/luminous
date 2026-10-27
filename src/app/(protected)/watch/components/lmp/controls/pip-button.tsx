@@ -1,4 +1,4 @@
-import { PictureInPictureIcon } from "@/app/(protected)/watch/components/lmp/icons"
+import { PictureInPictureIcon } from "@keyline-icons/react/fill"
 
 import { ControlButton } from "./control-button"
 

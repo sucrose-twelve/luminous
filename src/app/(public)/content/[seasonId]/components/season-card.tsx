@@ -1,8 +1,8 @@
-import { Chip } from "@heroui/react"
 import Image from "next/image"
 
 import { Link } from "@/components/link"
 import { SeasonStatus } from "@/components/season/status"
+import { Badge } from "@/components/ui/badge"
 import { SEASON_KIND_LABELS } from "@/constants"
 import { airedLabel } from "@/libs/season"
 
@@ -39,12 +39,12 @@ export function SeasonCard({
         <SeasonStatus value={season.status} />
 
         <div className='flex flex-wrap gap-1'>
-          <Chip className={SEASON_KIND_CHIP_CLASSES[season.kind]} size='sm'>
-            <Chip.Label>{SEASON_KIND_LABELS[season.kind]}</Chip.Label>
-          </Chip>
-          <Chip className='bg-zinc-800 text-zinc-300' size='sm'>
-            <Chip.Label>{airedLabel(season.releasedOn)}</Chip.Label>
-          </Chip>
+          <Badge className={SEASON_KIND_CHIP_CLASSES[season.kind]}>
+            {SEASON_KIND_LABELS[season.kind]}
+          </Badge>
+          <Badge className='bg-zinc-800 text-zinc-300'>
+            {airedLabel(season.releasedOn)}
+          </Badge>
         </div>
 
         <div className='line-clamp-2 text-sm font-medium'>{title}</div>

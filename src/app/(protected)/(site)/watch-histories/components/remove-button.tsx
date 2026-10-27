@@ -1,10 +1,24 @@
 "use client"
 
-import { AlertDialog, Button, Spinner, useOverlayState } from "@heroui/react"
 import { Delete02Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { useCallback, useState, useTransition } from "react"
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogMedia,
+  AlertDialogTitle,
+  AlertDialogTrigger
+} from "@/components/ui/alert-dialog"
+import { Button } from "@/components/ui/button"
+import { Spinner } from "@/components/ui/spinner"
+import { useOverlayState } from "@/hooks"
 import { cls } from "@/libs/utils"
 
 import { deleteWatchHistory } from "../actions/delete"
@@ -14,7 +28,7 @@ import { deleteWatchHistory } from "../actions/delete"
  * grid view as an icon.
  *
  * The dialog closes on success (the action refreshes the page without the row) and stays open with the error
- * otherwise. Backdrop click and `Esc` cancel it, except while the removal runs.
+ * otherwise. `Esc` cancels it, except while the removal runs.
  */
 export function RemoveButton({
   id,
@@ -47,53 +61,47 @@ export function RemoveButton({
   }, [id, state])
 
   return (
-    <>
-      <Button
-        className={cls(
-          "data-[hovered=true]:text-danger h-9 rounded-lg font-bold",
-          isIconOnly && "size-9 min-w-0",
-          className
-        )}
-        variant='outline'
-        size='sm'
-        isIconOnly={isIconOnly}
-        aria-label={isIconOnly ? `Remove ${title} from history` : undefined}
-        onPress={state.open}>
-        <HugeiconsIcon icon={Delete02Icon} size={16} strokeWidth={1.8} />
+    <AlertDialog open={state.isOpen} onOpenChange={handleOpenChange}>
+      <AlertDialogTrigger
+        render={
+          <Button
+            variant='outline'
+            size={isIconOnly ? "icon-lg" : "lg"}
+            aria-label={isIconOnly ? `Remove ${title} from history` : undefined}
+            className={cls(
+              "hover:text-destructive rounded-lg font-bold",
+              !isIconOnly && "px-3",
+              className
+            )}
+          />
+        }>
+        <HugeiconsIcon icon={Delete02Icon} strokeWidth={1.8} />
         {isIconOnly ? null : "Remove"}
-      </Button>
+      </AlertDialogTrigger>
 
-      <AlertDialog.Backdrop
-        variant='blur'
-        isDismissable={!isPending}
-        isKeyboardDismissDisabled={isPending}
-        isOpen={state.isOpen}
-        onOpenChange={handleOpenChange}>
-        <AlertDialog.Container size='sm'>
-          <AlertDialog.Dialog>
-            <AlertDialog.Header>
-              <AlertDialog.Icon status='danger' />
-              <AlertDialog.Heading>Remove from watch history?</AlertDialog.Heading>
-            </AlertDialog.Header>
-            <AlertDialog.Body>
-              <p>
-                <strong>{title}</strong> and its saved progress will be removed. This
-                can&apos;t be undone.
-              </p>
-              {error ? <p className='text-danger mt-2 text-sm'>{error}</p> : null}
-            </AlertDialog.Body>
-            <AlertDialog.Footer>
-              <Button slot='close' variant='tertiary' isDisabled={isPending}>
-                Cancel
-              </Button>
-              <Button variant='danger' isPending={isPending} onPress={handleRemove}>
-                {isPending ? <Spinner size='sm' color='current' /> : null}
-                Remove
-              </Button>
-            </AlertDialog.Footer>
-          </AlertDialog.Dialog>
-        </AlertDialog.Container>
-      </AlertDialog.Backdrop>
-    </>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogMedia className='bg-destructive/10 text-destructive'>
+            <HugeiconsIcon icon={Delete02Icon} strokeWidth={1.8} />
+          </AlertDialogMedia>
+          <AlertDialogTitle>Remove from watch history?</AlertDialogTitle>
+          <AlertDialogDescription>
+            <strong className='text-foreground'>{title}</strong> and its saved progress
+            will be removed. This can&apos;t be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        {error ? <p className='text-destructive text-sm'>{error}</p> : null}
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            variant='destructive'
+            disabled={isPending}
+            onClick={handleRemove}>
+            {isPending ? <Spinner /> : null}
+            Remove
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   )
 }

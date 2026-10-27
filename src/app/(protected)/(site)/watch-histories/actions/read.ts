@@ -107,7 +107,7 @@ const historyFields = {
     hasThumbnail: sql<boolean>`${schema.episodes.thumbnail} is not null`
   },
   season: pick(seasonColumns, ["id", "kind", "seasonNo", "title"]),
-  content: pick(contentColumns, ["id", "kind", "title", "altTitles", "genres"]),
+  content: pick(contentColumns, ["id", "kind", "title", "altTitles"]),
   next: {
     id: nextEpisode.id,
     episodeNo: nextEpisode.episodeNo,
@@ -207,6 +207,22 @@ export type HistoryRow = Extract<
   Awaited<ReturnType<typeof readWatchHistories>>,
   { ok: true }
 >["data"]["data"][number]
+
+/**
+ * Whether the signed-in account has any watch history, whatever the filters. The layout shows the toolbar
+ * only then. Per-user, so not cached.
+ *
+ * @returns `true` when at least one row exists
+ */
+export const readHasWatchHistory = withAuth(async (account) => {
+  const [row] = await db
+    .select({ id: schema.watchHistories.id })
+    .from(schema.watchHistories)
+    .where(eq(schema.watchHistories.accountId, account.id))
+    .limit(1)
+
+  return row !== undefined
+})
 
 /**
  * Builds the `where` conditions; filters that aren't set add nothing.

@@ -1,10 +1,10 @@
 "use client"
 
-import { Chip } from "@heroui/react"
 import { motion } from "framer-motion"
 import Image from "next/image"
 
 import { SeasonStatus } from "@/components/season/status"
+import { Badge } from "@/components/ui/badge"
 import { seasonName } from "@/libs/season"
 import { cls } from "@/libs/utils"
 
@@ -44,11 +44,9 @@ export function ContentCard({
       <div className='pointer-events-none absolute inset-x-0 top-0 flex flex-wrap items-center gap-1 p-2'>
         <SeasonStatus value={season.status} />
 
-        <Chip className='bg-foreground text-background' size='sm'>
-          <Chip.Label className='uppercase'>
-            {audios.map((audio) => audio.language.split("-")[1]).join(" • ")}
-          </Chip.Label>
-        </Chip>
+        <Badge className='bg-foreground text-background uppercase'>
+          {audios.map((audio) => audio.language.split("-")[1]).join(" • ")}
+        </Badge>
       </div>
 
       <div className='card-content-desc'>

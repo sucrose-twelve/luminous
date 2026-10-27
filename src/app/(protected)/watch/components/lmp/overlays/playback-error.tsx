@@ -1,5 +1,4 @@
-import { Alert02Icon } from "@hugeicons/core-free-icons"
-import { HugeiconsIcon } from "@hugeicons/react"
+import { TriangleAlertIcon } from "@keyline-icons/react/fill"
 
 import type { MediaSourceError } from "../hooks/use-media-source"
 
@@ -26,18 +25,13 @@ export function PlaybackError({ error }: Readonly<{ error: MediaSourceError }>) 
       <div
         role='alert'
         className='border-gradient flex max-w-sm flex-col items-center gap-3 rounded-2xl bg-neutral-900/80 px-6 py-8 text-center backdrop-blur-xl'>
-        <HugeiconsIcon
-          icon={Alert02Icon}
-          size={40}
-          strokeWidth={1.5}
-          className='text-zinc-400'
-        />
+        <TriangleAlertIcon size={40} className='text-zinc-400' />
         <h2 className='text-lg font-medium text-white'>{title}</h2>
         <p className='text-sm text-zinc-400'>{message}</p>
         <button
           type='button'
           onClick={() => window.location.reload()}
-          className='bg-theme hover:bg-theme-400 focus-visible:bg-theme-400 mt-3 cursor-pointer rounded-lg px-4 py-2 text-sm font-medium text-black transition-colors'>
+          className='bg-primary text-primary-foreground hover:bg-primary/80 focus-visible:bg-primary/80 mt-3 cursor-pointer rounded-lg px-4 py-2 text-sm font-medium transition-colors'>
           Reload
         </button>
       </div>

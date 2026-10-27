@@ -1,10 +1,16 @@
 "use client"
 
-import { Breadcrumbs, Tooltip } from "@heroui/react"
-import { ArrowRight01Icon } from "@hugeicons/core-free-icons"
-import { HugeiconsIcon } from "@hugeicons/react"
+import { Fragment } from "react"
 
 import { Link } from "@/components/link"
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator
+} from "@/components/ui/breadcrumb"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 const TRAIL = [
   { href: "/", label: "Home" },
@@ -13,49 +19,44 @@ const TRAIL = [
 
 /**
  * `Home > Browse > <content title>` at the top of the page. The content title is the current page: plain text
- * (no link), cut to `max-w-2xs`, with the full title in a tooltip below it.
+ * (no link), cut to `max-w-xs`, with the full title in a tooltip below it. It is focusable so keyboard users
+ * can open that tooltip too.
  *
- * Every item uses the function-children form and draws its own separator. A HeroUI item with `href` renders a
- * plain `<a>` (the app has no React Aria `RouterProvider`), which reloads the page and skips the loader bar,
- * so the links go through `@/components/link` instead.
+ * The links go through `@/components/link`, which starts the loader bar.
  */
 export function SeasonBreadcrumbs({ contentTitle }: Readonly<{ contentTitle: string }>) {
   return (
-    <Breadcrumbs className='mb-8 gap-x-2.5 sm:mb-12'>
-      {TRAIL.map((crumb) => (
-        <Breadcrumbs.Item className='gap-x-2.5' key={crumb.href}>
-          {() => (
-            <>
+    <Breadcrumb className='mb-8 sm:mb-12'>
+      <BreadcrumbList className='flex-nowrap gap-2.5'>
+        {TRAIL.map((crumb) => (
+          <Fragment key={crumb.href}>
+            <BreadcrumbItem>
               <Link
                 className='text-sm font-medium text-zinc-400 transition-colors hover:text-white'
                 href={crumb.href}>
                 {crumb.label}
               </Link>
-              <span className='text-zinc-500' aria-hidden>
-                <HugeiconsIcon
-                  icon={ArrowRight01Icon}
-                  color='currentColor'
-                  size={12}
-                  strokeWidth={2}
-                />
-              </span>
-            </>
-          )}
-        </Breadcrumbs.Item>
-      ))}
+            </BreadcrumbItem>
+            <BreadcrumbSeparator className='text-zinc-500 [&>svg]:size-3' />
+          </Fragment>
+        ))}
 
-      <Breadcrumbs.Item className='min-w-0 shrink gap-x-2.5'>
-        {() => (
-          <Tooltip delay={200}>
-            <Tooltip.Trigger
-              className='max-w-xs min-w-0 cursor-default truncate text-sm font-medium text-white'
-              aria-current='page'>
+        <BreadcrumbItem className='min-w-0 shrink'>
+          <Tooltip>
+            <TooltipTrigger
+              delay={200}
+              render={
+                <BreadcrumbPage
+                  tabIndex={0}
+                  className='max-w-xs min-w-0 cursor-default truncate text-sm font-medium text-white'
+                />
+              }>
               {contentTitle}
-            </Tooltip.Trigger>
-            <Tooltip.Content placement='bottom'>{contentTitle}</Tooltip.Content>
+            </TooltipTrigger>
+            <TooltipContent side='bottom'>{contentTitle}</TooltipContent>
           </Tooltip>
-        )}
-      </Breadcrumbs.Item>
-    </Breadcrumbs>
+        </BreadcrumbItem>
+      </BreadcrumbList>
+    </Breadcrumb>
   )
 }

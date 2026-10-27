@@ -38,6 +38,6 @@ export default {
   quoteProps: "consistent",
   semi: false,
   singleQuote: false,
-  tailwindFunctions: ["cls", "clsx"],
+  tailwindFunctions: ["cn", "cls", "clsx"],
   trailingComma: "none"
 }

@@ -1,11 +1,18 @@
 "use client"
 
-import { Button, Kbd, SearchField } from "@heroui/react"
 import { Cancel01Icon, Search01Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { useRouter } from "next/navigation"
 import { useCallback, useEffect, useRef, useState } from "react"
 
+import { Button } from "@/components/ui/button"
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput
+} from "@/components/ui/input-group"
+import { Kbd } from "@/components/ui/kbd"
 import { useLoader } from "@/hooks"
 import { cls } from "@/libs/utils"
 
@@ -14,24 +21,38 @@ import { cls } from "@/libs/utils"
  *
  * From `md` up it is a field in the bar. On phones it folds into an icon button that opens the field over the
  * whole bar, with a button to fold it back.
+ *
+ * A `type='search'` input, so `Esc` clears it natively; the browser's own clear button is hidden for ours.
  */
 export function HeaderSearch() {
   const router = useRouter()
   const loader = useLoader()
   const inputRef = useRef<HTMLInputElement>(null)
   const [isExpanded, setIsExpanded] = useState(false)
+  const [query, setQuery] = useState("")
 
   const handleSubmit = useCallback(
-    (value: string) => {
-      const search = value.trim()
+    (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault()
+      const search = query.trim()
       if (!search) return
 
       loader.on()
       setIsExpanded(false)
       router.push(`/browse?${new URLSearchParams({ search })}`)
     },
-    [loader, router]
+    [loader, query, router]
   )
+
+  const handleChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => setQuery(event.target.value),
+    []
+  )
+
+  const handleClear = useCallback(() => {
+    setQuery("")
+    inputRef.current?.focus()
+  }, [])
 
   const handleExpand = useCallback(() => setIsExpanded(true), [])
   const handleCollapse = useCallback(() => setIsExpanded(false), [])
@@ -67,11 +88,11 @@ export function HeaderSearch() {
   return (
     <>
       <Button
-        isIconOnly
         variant='ghost'
+        size='icon'
         aria-label='Search'
         className='size-11 rounded-lg text-white md:hidden'
-        onPress={handleExpand}>
+        onClick={handleExpand}>
         <HugeiconsIcon className='size-5' icon={Search01Icon} strokeWidth={2} />
       </Button>
 
@@ -82,34 +103,46 @@ export function HeaderSearch() {
             ? "max-md:absolute max-md:inset-0 max-md:z-10 max-md:flex max-md:rounded-[inherit] max-md:bg-black max-md:pr-1.5 max-md:pl-2"
             : "hidden"
         )}>
-        <SearchField
-          aria-label='Search titles'
-          name='search'
-          variant='secondary'
-          className='grow'
-          onSubmit={handleSubmit}>
-          <SearchField.Group className='ring-foreground/5 h-10 rounded-lg bg-transparent ring-2'>
-            <SearchField.SearchIcon className='text-zinc-400' />
-            <SearchField.Input
+        <form role='search' className='grow' onSubmit={handleSubmit}>
+          <InputGroup className='ring-foreground/5 h-10 rounded-lg border-0 bg-transparent ring-2 dark:bg-transparent'>
+            <InputGroupInput
               ref={inputRef}
+              type='search'
+              name='search'
+              aria-label='Search titles'
               placeholder='Search titles'
               enterKeyHint='search'
-              className='placeholder:text-foreground/25 w-36'
+              value={query}
+              className='placeholder:text-foreground/25 w-36 [&::-webkit-search-cancel-button]:hidden'
+              onChange={handleChange}
             />
-            <SearchField.ClearButton className='text-zinc-400' />
-            <Kbd variant='light' className='me-2 max-md:hidden'>
-              <Kbd.Content>/</Kbd.Content>
-            </Kbd>
-          </SearchField.Group>
-        </SearchField>
+            <InputGroupAddon className='text-zinc-400'>
+              <HugeiconsIcon icon={Search01Icon} strokeWidth={2} />
+            </InputGroupAddon>
+            {query ? (
+              <InputGroupAddon align='inline-end'>
+                <InputGroupButton
+                  size='icon-xs'
+                  aria-label='Clear search'
+                  className='text-zinc-400'
+                  onClick={handleClear}>
+                  <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} />
+                </InputGroupButton>
+              </InputGroupAddon>
+            ) : null}
+            <InputGroupAddon align='inline-end' className='max-md:hidden'>
+              <Kbd className='me-1'>/</Kbd>
+            </InputGroupAddon>
+          </InputGroup>
+        </form>
 
         <Button
-          isIconOnly
           variant='ghost'
+          size='icon'
           aria-label='Close search'
           className='size-11 rounded-xl text-white md:hidden'
-          onPress={handleCollapse}>
-          <HugeiconsIcon icon={Cancel01Icon} size={20} strokeWidth={1.8} />
+          onClick={handleCollapse}>
+          <HugeiconsIcon className='size-5' icon={Cancel01Icon} strokeWidth={1.8} />
         </Button>
       </div>
     </>

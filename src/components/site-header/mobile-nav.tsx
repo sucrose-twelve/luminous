@@ -1,11 +1,17 @@
 "use client"
 
-import { Button, Dropdown, Label, type Key } from "@heroui/react"
 import { Menu01Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { usePathname, useRouter } from "next/navigation"
 import { useCallback } from "react"
 
+import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu"
 import { NAV_LINKS } from "@/constants/navigation"
 import { useLoader } from "@/hooks"
 import { cls } from "@/libs/utils"
@@ -20,9 +26,8 @@ export function MobileNav() {
   const loader = useLoader()
   const pathname = usePathname()
 
-  const handleAction = useCallback(
-    (key: Key) => {
-      const href = String(key)
+  const handleNavigate = useCallback(
+    (href: string) => {
       if (href === pathname) return
 
       loader.on()
@@ -32,32 +37,35 @@ export function MobileNav() {
   )
 
   return (
-    <Dropdown>
-      <Button
-        isIconOnly
-        variant='ghost'
+    <DropdownMenu>
+      <DropdownMenuTrigger
         aria-label='Open menu'
-        className='size-11 rounded-xl text-xl text-white md:hidden'>
+        render={
+          <Button
+            variant='ghost'
+            size='icon'
+            className='size-11 rounded-xl text-white md:hidden'
+          />
+        }>
         <HugeiconsIcon className='size-6' icon={Menu01Icon} strokeWidth={2} />
-      </Button>
-      <Dropdown.Popover
-        placement='bottom end'
-        offset={14}
-        className='min-w-52 rounded-2xl bg-black/85 ring-1 ring-white/10 backdrop-blur-xl'>
-        <Dropdown.Menu aria-label='Sections' onAction={handleAction}>
-          {NAV_LINKS.map((link) => (
-            <Dropdown.Item key={link.href} id={link.href} textValue={link.label}>
-              <Label
-                className={cls(
-                  "font-semibold",
-                  isNavActive(pathname, link.href) ? "text-theme" : "text-white"
-                )}>
-                {link.label}
-              </Label>
-            </Dropdown.Item>
-          ))}
-        </Dropdown.Menu>
-      </Dropdown.Popover>
-    </Dropdown>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align='end'
+        sideOffset={14}
+        className='w-auto min-w-52 rounded-2xl bg-black/85 p-1.5 ring-white/10 backdrop-blur-xl'>
+        {NAV_LINKS.map((link) => (
+          <DropdownMenuItem
+            key={link.href}
+            label={link.label}
+            className={cls(
+              "rounded-xl px-3 py-2 font-semibold",
+              isNavActive(pathname, link.href) ? "text-primary" : "text-zinc-400"
+            )}
+            onClick={() => handleNavigate(link.href)}>
+            {link.label}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }

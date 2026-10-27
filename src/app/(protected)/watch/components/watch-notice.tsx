@@ -1,4 +1,3 @@
-import { buttonVariants } from "@heroui/react"
 import {
   Alert02Icon,
   BrowserIcon,
@@ -8,6 +7,7 @@ import {
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react"
 import NextLink from "next/link"
 
+import { buttonVariants } from "@/components/ui/button"
 import { cls } from "@/libs/utils"
 
 type WatchNoticeProps = {
@@ -67,10 +67,7 @@ export function WatchNotice({ kind }: Readonly<WatchNoticeProps>) {
         <p className='text-sm text-zinc-400'>{notice.message}</p>
         <NextLink
           href='/browse'
-          className={cls(
-            buttonVariants({ variant: "primary" }),
-            "bg-theme hover:bg-theme-400 mt-3 rounded-sm text-black"
-          )}>
+          className={cls(buttonVariants({ size: "lg" }), "mt-3 rounded-sm px-4")}>
           Browse titles
         </NextLink>
       </div>

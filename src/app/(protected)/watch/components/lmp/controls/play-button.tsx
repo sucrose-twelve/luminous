@@ -1,8 +1,4 @@
-import {
-  PauseIcon,
-  PlayIcon,
-  ReplayIcon
-} from "@/app/(protected)/watch/components/lmp/icons"
+import { PauseIcon, PlayIcon, ReplayIcon } from "@keyline-icons/react/fill"
 
 import type { LmpStatus } from "../types"
 import { ControlButton } from "./control-button"

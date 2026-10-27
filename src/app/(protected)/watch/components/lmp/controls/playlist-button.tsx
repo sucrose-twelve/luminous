@@ -1,4 +1,4 @@
-import { ListVideoIcon } from "@/app/(protected)/watch/components/lmp/icons"
+import { ListVideoIcon } from "@keyline-icons/react/fill"
 
 import { ControlButton } from "./control-button"
 

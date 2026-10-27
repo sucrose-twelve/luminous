@@ -1,4 +1,3 @@
-import { Button, Separator, Tooltip } from "@heroui/react"
 import { Clock01Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 
@@ -6,6 +5,9 @@ import type { AuthAccount } from "@/actions/auth"
 import { BrandLogo } from "@/components/brand-logo"
 import { Link } from "@/components/link"
 import { SignInButton } from "@/components/sign-in/sign-in-button"
+import { buttonVariants } from "@/components/ui/button"
+import { Separator } from "@/components/ui/separator"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { cls } from "@/libs/utils"
 
 import { AccountMenu } from "./account-menu"
@@ -33,7 +35,7 @@ export function SiteHeader({ account }: Readonly<{ account: AuthAccount | null }
         )}>
         <div
           aria-hidden
-          className='via-theme/75 absolute bottom-0 left-1/2 h-px w-1/2 bg-linear-to-r from-transparent to-transparent'
+          className='via-primary/75 absolute bottom-0 left-1/2 h-px w-1/2 bg-linear-to-r from-transparent to-transparent'
         />
 
         <Link href='/' className='hidden justify-self-start sm:block'>
@@ -53,24 +55,28 @@ export function SiteHeader({ account }: Readonly<{ account: AuthAccount | null }
               <>
                 <Separator className='bg-white/5 max-sm:hidden' orientation='vertical' />
 
-                <Tooltip delay={0}>
-                  <Link href='/watch-histories'>
-                    <Button
-                      className='ring-foreground/5 size-10 rounded-lg ring-2'
-                      variant='ghost'
-                      isIconOnly>
-                      <HugeiconsIcon
-                        className='size-5'
-                        icon={Clock01Icon}
-                        strokeWidth={2}
+                <Tooltip>
+                  <TooltipTrigger
+                    delay={0}
+                    render={
+                      <Link
+                        href='/watch-histories'
+                        aria-label='Watch History'
+                        className={cls(
+                          buttonVariants({ variant: "ghost", size: "icon" }),
+                          "ring-foreground/5 size-10 rounded-lg ring-2"
+                        )}
                       />
-                    </Button>
-                  </Link>
-
-                  <Tooltip.Content showArrow placement='bottom' offset={16}>
-                    <Tooltip.Arrow />
-                    <p>Watch History</p>
-                  </Tooltip.Content>
+                    }>
+                    <HugeiconsIcon
+                      className='size-5'
+                      icon={Clock01Icon}
+                      strokeWidth={2}
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent side='bottom' sideOffset={16}>
+                    Watch History
+                  </TooltipContent>
                 </Tooltip>
 
                 <AccountMenu

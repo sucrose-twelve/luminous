@@ -50,7 +50,7 @@ export function EpisodeCardBody({
       <span className='flex min-w-0 flex-col justify-center gap-y-1'>
         <span className='flex items-center gap-x-1.5 font-bold'>
           {mark ? (
-            <span className='text-theme'>
+            <span className='text-primary'>
               <HugeiconsIcon
                 icon={PlaySquareIcon}
                 color='currentColor'

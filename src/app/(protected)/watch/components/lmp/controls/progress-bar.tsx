@@ -274,7 +274,7 @@ export function ProgressBar({
         {skips.map((skip) => (
           <div
             key={`${skip.kind}-${skip.from}`}
-            className='bg-theme/45 absolute inset-y-0'
+            className='bg-primary/45 absolute inset-y-0'
             style={{
               left: `${(skip.from / duration) * 100}%`,
               width: `${((skip.to - skip.from) / duration) * 100}%`

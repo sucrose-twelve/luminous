@@ -5,7 +5,6 @@ import { HistoryEmpty } from "./components/history-empty"
 import { HistoryGridCard } from "./components/history-grid-card"
 import { HistoryListItem } from "./components/history-list-item"
 import { HistoryPagination } from "./components/history-pagination"
-import { HistoryToolbar } from "./components/history-toolbar"
 import { toHistoryItem } from "./utils"
 import { queryValidator } from "./validator.nuqs"
 
@@ -29,45 +28,41 @@ export default async function WatchHistories({ searchParams }: NextSearchParams)
   const items = page?.data.map((row) => toHistoryItem(row, now)) ?? []
   const isFiltered = query.kind !== null || query.status !== null
 
+  if (!page || !items.length) {
+    return (
+      <HistoryEmpty
+        isFiltered={isFiltered}
+        clearHref={
+          query.view === "list" ? "/watch-histories?view=list" : "/watch-histories"
+        }
+      />
+    )
+  }
+
   return (
-    <section className='max-w-8xl mx-auto w-full px-4 py-8'>
-      <h1 className='sr-only'>Watch History</h1>
-
-      {items.length || isFiltered ? <HistoryToolbar /> : null}
-
-      {page && items.length ? (
-        <>
-          {query.view === "list" ? (
-            <div className='flex flex-col gap-3 pt-6'>
-              {items.map((item) => (
-                <HistoryListItem key={item.id} item={item} />
-              ))}
-            </div>
-          ) : (
-            <div className='grid grid-cols-1 gap-4 pt-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
-              {items.map((item) => (
-                <HistoryGridCard key={item.id} item={item} />
-              ))}
-            </div>
-          )}
-
-          <div className='pt-8 sm:pt-16'>
-            <HistoryPagination
-              currentPage={page.currentPage}
-              lastPage={page.lastPage}
-              prevPage={page.prevPage}
-              nextPage={page.nextPage}
-            />
-          </div>
-        </>
+    <>
+      {query.view === "list" ? (
+        <div className='flex flex-col gap-3 pt-6'>
+          {items.map((item) => (
+            <HistoryListItem key={item.id} item={item} />
+          ))}
+        </div>
       ) : (
-        <HistoryEmpty
-          isFiltered={isFiltered}
-          clearHref={
-            query.view === "list" ? "/watch-histories?view=list" : "/watch-histories"
-          }
-        />
+        <div className='grid grid-cols-1 gap-4 pt-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
+          {items.map((item) => (
+            <HistoryGridCard key={item.id} item={item} />
+          ))}
+        </div>
       )}
-    </section>
+
+      <div className='pt-8 sm:pt-16'>
+        <HistoryPagination
+          currentPage={page.currentPage}
+          lastPage={page.lastPage}
+          prevPage={page.prevPage}
+          nextPage={page.nextPage}
+        />
+      </div>
+    </>
   )
 }

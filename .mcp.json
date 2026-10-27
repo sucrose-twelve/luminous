@@ -1,8 +1,8 @@
 {
   "mcpServers": {
-    "heroui-react": {
+    "shadcn": {
       "command": "cmd",
-      "args": ["/c", "npx", "-y", "@heroui/react-mcp@latest"]
+      "args": ["/c", "npx", "-y", "shadcn@latest", "mcp"]
     }
   }
 }

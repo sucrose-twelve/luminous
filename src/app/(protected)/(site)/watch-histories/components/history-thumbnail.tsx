@@ -1,4 +1,3 @@
-import { Chip } from "@heroui/react"
 import Image from "next/image"
 
 import { Link } from "@/components/link"
@@ -7,8 +6,8 @@ import { cls } from "@/libs/utils"
 import type { HistoryItem } from "../utils"
 
 /**
- * The card's picture: the shown episode's thumbnail (or the season poster when it has none) with the kind chip,
- * linking to the season page. `children` is laid over its bottom edge (the grid card's status and time).
+ * The card's picture: the shown episode's thumbnail (or the season poster when it has none), linking to the
+ * season page. `children` is laid over its bottom edge (the grid card's status and time).
  */
 export function HistoryThumbnail({
   item,
@@ -34,9 +33,6 @@ export function HistoryThumbnail({
         quality={75}
         fill
       />
-      <Chip className='absolute top-2 left-2' variant='primary' size='sm'>
-        {item.kindLabel}
-      </Chip>
       {children}
     </Link>
   )

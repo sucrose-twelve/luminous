@@ -1,6 +1,5 @@
 "use client"
 
-import { ToggleButton, ToggleButtonGroup, type Key } from "@heroui/react"
 import {
   FavouriteIcon,
   Film01Icon,
@@ -12,6 +11,7 @@ import {
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react"
 import { useCallback, useMemo } from "react"
 
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import {
   HISTORY_ADULT_KINDS,
   HISTORY_GENERAL_KINDS,
@@ -33,9 +33,9 @@ const KIND_ICONS: Record<HistoryKind, IconSvgElement> = {
 }
 
 const TAB_CLASS =
-  "group h-9 min-w-9 gap-2 rounded-lg bg-transparent px-0 font-bold text-zinc-400 data-[hovered=true]:text-foreground data-[selected=true]:bg-theme data-[selected=true]:px-3 data-[selected=true]:text-background sm:data-[selected=true]:px-4"
+  "group h-9 min-w-9 gap-2 rounded-lg bg-transparent px-0 font-bold text-zinc-400 hover:bg-transparent hover:text-foreground aria-pressed:bg-primary aria-pressed:px-3 aria-pressed:text-primary-foreground aria-pressed:hover:bg-primary aria-pressed:hover:text-primary-foreground sm:aria-pressed:px-4"
 
-const LABEL_CLASS = "hidden group-data-[selected=true]:inline"
+const LABEL_CLASS = "hidden group-aria-pressed:inline"
 
 /**
  * The kind switch on the left of the toolbar: `All`, one tab per `HISTORY_GENERAL_KINDS`, a divider, then one
@@ -43,15 +43,16 @@ const LABEL_CLASS = "hidden group-data-[selected=true]:inline"
  * the general kinds only.
  *
  * Tabs are icons only; the selected one also shows its label. Each tab keeps an `aria-label`, since a hidden
- * label doesn't name it.
+ * label doesn't name it. Pressing the selected tab again changes nothing (Base UI would empty the group).
  */
 export function KindTabs() {
   const { query, update } = useHistoryQuery()
-  const selectedKeys = useMemo(() => [query.kind ?? ALL], [query.kind])
+  const value = useMemo(() => [query.kind ?? ALL], [query.kind])
 
   const handleChange = useCallback(
-    (keys: Set<Key>) => {
-      const [key] = keys
+    (values: string[]) => {
+      const [key] = values
+      if (!key) return
       const kind = HISTORY_KINDS.find((value) => value === key) ?? null
       if (kind !== query.kind) update({ kind })
     },
@@ -59,18 +60,15 @@ export function KindTabs() {
   )
 
   return (
-    <ToggleButtonGroup
+    <ToggleGroup
       aria-label='Kind'
       className='gap-1 overflow-x-auto'
-      isDetached
-      disallowEmptySelection
-      selectionMode='single'
-      selectedKeys={selectedKeys}
-      onSelectionChange={handleChange}>
-      <ToggleButton className={TAB_CLASS} id={ALL} aria-label='All'>
-        <HugeiconsIcon icon={SparklesIcon} size={18} strokeWidth={1.8} />
+      value={value}
+      onValueChange={handleChange}>
+      <ToggleGroupItem className={TAB_CLASS} value={ALL} aria-label='All'>
+        <HugeiconsIcon className='size-4.5' icon={SparklesIcon} strokeWidth={1.8} />
         <span className={LABEL_CLASS}>All</span>
-      </ToggleButton>
+      </ToggleGroupItem>
       {HISTORY_GENERAL_KINDS.map((kind) => (
         <KindTab key={kind} kind={kind} />
       ))}
@@ -78,15 +76,18 @@ export function KindTabs() {
       {HISTORY_ADULT_KINDS.map((kind) => (
         <KindTab key={kind} kind={kind} />
       ))}
-    </ToggleButtonGroup>
+    </ToggleGroup>
   )
 }
 
 function KindTab({ kind }: Readonly<{ kind: HistoryKind }>) {
   return (
-    <ToggleButton className={TAB_CLASS} id={kind} aria-label={HISTORY_KIND_LABELS[kind]}>
-      <HugeiconsIcon icon={KIND_ICONS[kind]} size={18} strokeWidth={1.8} />
+    <ToggleGroupItem
+      className={TAB_CLASS}
+      value={kind}
+      aria-label={HISTORY_KIND_LABELS[kind]}>
+      <HugeiconsIcon className='size-4.5' icon={KIND_ICONS[kind]} strokeWidth={1.8} />
       <span className={LABEL_CLASS}>{HISTORY_KIND_LABELS[kind]}</span>
-    </ToggleButton>
+    </ToggleGroupItem>
   )
 }

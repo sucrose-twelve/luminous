@@ -1,8 +1,10 @@
 "use client"
 
-import { Button, useOverlayState } from "@heroui/react"
 import dynamic from "next/dynamic"
 import { useCallback, useState } from "react"
+
+import { Button } from "@/components/ui/button"
+import { useOverlayState } from "@/hooks"
 
 const loadSignInModal = () => import("./sign-in-modal")
 
@@ -29,9 +31,9 @@ export function SignInButton() {
   return (
     <>
       <Button
-        className='bg-theme text-background hover:bg-theme-400 h-10 rounded-xl px-4 text-sm font-semibold'
-        onHoverStart={handlePreload}
-        onPress={handleOpen}>
+        className='h-10 rounded-xl px-4 text-sm font-semibold'
+        onPointerEnter={handlePreload}
+        onClick={handleOpen}>
         Sign in
       </Button>
       {hasOpened ? <SignInModal control={control} /> : null}

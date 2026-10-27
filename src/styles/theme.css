@@ -1,20 +1,63 @@
+/**
+ * Colour tokens in the shadcn/ui convention, which its components and Animate UI read. Luminous is dark-only,
+ * so this one palette is the dark one, and primary is white.
+ */
+:root {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(1 0 0);
+  --primary-foreground: oklch(0.145 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+
+  /**
+   * Equal to Tailwind's `--radius-lg`. The radius scale itself stays Tailwind's: shadcn/ui's scale derived
+   * from `--radius` would resize every `rounded-*` already in the app.
+   */
+  --radius: 0.5rem;
+}
+
+/**
+ * `inline` so a utility resolves the variable on the element it styles: the font variables from `next/font`
+ * are set on `<body>`, not `:root`.
+ */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --font-sans: var(--font-geist), var(--font-thai), var(--font-japanese), sans-serif;
+  --font-heading: var(--font-geist), var(--font-thai), var(--font-japanese), sans-serif;
+}
+
 @theme {
-  --color-background: #0a0a0a;
-  --color-foreground: #fafafa;
-
-  --color-theme: #05d6a2;
-  --color-theme-50: #ebfef7;
-  --color-theme-100: #cefde9;
-  --color-theme-200: #a2f8d7;
-  --color-theme-300: #66efc4;
-  --color-theme-400: #29deab;
-  --color-theme-500: #05d6a2;
-  --color-theme-600: #00a07c;
-  --color-theme-700: #008066;
-  --color-theme-800: #006551;
-  --color-theme-900: #015344;
-  --color-theme-950: #002f28;
-
   --color-rainbow: linear-gradient(
     to right,
     #ef5350,

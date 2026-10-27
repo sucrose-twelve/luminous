@@ -1,8 +1,8 @@
-import { buttonVariants } from "@heroui/react"
 import { PlayIcon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 
 import { Link } from "@/components/link"
+import { buttonVariants } from "@/components/ui/button"
 import { cls } from "@/libs/utils"
 
 /**
@@ -16,8 +16,8 @@ export function ContinueLink({
   return (
     <Link
       className={cls(
-        buttonVariants({ variant: "primary", size: "sm" }),
-        "bg-foreground text-background h-9 rounded-lg px-4 font-bold",
+        buttonVariants({ size: "lg" }),
+        "rounded-lg px-4 font-bold",
         className
       )}
       href={href}

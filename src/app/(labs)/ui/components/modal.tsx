@@ -1,18 +1,19 @@
 "use client"
 
-import { Button, Spinner, useOverlayState } from "@heroui/react"
 import { KeyframesDoubleIcon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 
+import { Button } from "@/components/ui/button"
 import { ModalComponent } from "@/components/ui/modal"
 import { ContentFooter, ContentHeader } from "@/components/ui/shared"
+import { useOverlayState } from "@/hooks"
 
 export function ModalUI() {
   const control = useOverlayState()
 
   return (
     <>
-      <Button onPress={control.open}>Modal UI</Button>
+      <Button onClick={control.open}>Modal UI</Button>
 
       <ModalComponent control={control} size='md'>
         <div className='min-w-80'>
@@ -30,18 +31,8 @@ export function ModalUI() {
           <div className='p-8'>...</div>
 
           <ContentFooter onClose={control.close}>
-            <Button
-              className='bg-theme rounded-sm'
-              type='submit'
-              variant='primary'
-              fullWidth
-              isPending={false}>
-              {({ isPending }) => (
-                <>
-                  {isPending ? <Spinner color='current' size='sm' /> : null}
-                  <span className='text-base font-bold uppercase'>ok</span>
-                </>
-              )}
+            <Button className='grow rounded-sm' type='submit' size='lg'>
+              <span className='text-base font-bold uppercase'>ok</span>
             </Button>
           </ContentFooter>
         </div>

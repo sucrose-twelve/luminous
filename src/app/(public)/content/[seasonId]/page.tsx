@@ -54,7 +54,7 @@ export default async function ContentSeason({
         className='absolute inset-0 bg-cover opacity-20'
         style={{
           backgroundImage:
-            "radial-gradient(closest-side,var(--color-theme-950),transparent)"
+            "radial-gradient(closest-side,var(--color-secondary),transparent)"
         }}
       />
 

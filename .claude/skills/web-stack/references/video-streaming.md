@@ -550,10 +550,12 @@ card, the hover preview). Follow it when drawing the player; the older `00-Overv
   `preload="metadata"`. On a touch device it opens in fullscreen: on mount when the
   browser still counts the tap that led there, otherwise at the first tap on the player.
   iPhone, whose only fullscreen is the native video player, is left alone.
-- **No HeroUI inside the player**: plain `<button>`s, and framer-motion for the drawers,
-  the Preferences popover, and its switches (`LazyMotion` with the features loaded on
-  demand, `m` components only, `MotionConfig reducedMotion="user"`). Icons come from
-  `lmp/icons`. Buttons and panels are dark glass with the `border-gradient` edge
+- **No UI library inside the player** (no shadcn/ui or Animate UI; Animate UI's `motion.*`
+  would also throw under `LazyMotion strict`): plain `<button>`s, and framer-motion for
+  the drawers, the Preferences popover, and its switches (`LazyMotion` with the features
+  loaded on demand, `m` components only, `MotionConfig reducedMotion="user"`). Icons come
+  from `@keyline-icons/react/fill`, except the 10-second seek icons in `lmp/icons`.
+  Buttons and panels are dark glass with the `border-gradient` edge
   (`src/styles/components/border-gradient.css`), and **draw no focus outline** (`.lmp` in
   `globals.css`): keyboard focus lightens the fill and the edge instead.
 - Layout: a top bar (Back to the content page; the content title over

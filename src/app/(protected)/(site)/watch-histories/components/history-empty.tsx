@@ -17,7 +17,7 @@ export function HistoryEmpty({
         <p className='text-sm text-zinc-400'>Titles you watch will show up here.</p>
       )}
       <Link
-        className='text-theme text-sm font-bold underline-offset-4 hover:underline'
+        className='text-primary text-sm font-bold underline-offset-4 hover:underline'
         href={isFiltered ? clearHref : "/browse"}>
         {isFiltered ? "Clear filters" : "Browse contents"}
       </Link>

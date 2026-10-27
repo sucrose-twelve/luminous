@@ -1,7 +1,8 @@
 "use client"
 
-import { Button, buttonVariants } from "@heroui/react"
 import Link from "next/link"
+
+import { Button, buttonVariants } from "@/components/ui/button"
 
 export default function Error({
   error,
@@ -26,11 +27,11 @@ export default function Error({
         </code>
 
         <div className='mt-4 flex justify-center gap-4'>
-          <Button variant='ghost' onPress={reset}>
+          <Button variant='ghost' size='lg' onClick={reset}>
             Try again
           </Button>
 
-          <Link className={buttonVariants({ variant: "primary" })} href='/'>
+          <Link className={buttonVariants({ size: "lg" })} href='/'>
             Go back home
           </Link>
         </div>

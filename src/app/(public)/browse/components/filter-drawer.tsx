@@ -1,19 +1,13 @@
 "use client"
 
-import {
-  Button,
-  Label,
-  Tag,
-  TagGroup,
-  useOverlayState,
-  type Selection
-} from "@heroui/react"
 import { FilterVerticalIcon, Refresh01Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useId, useMemo, useState } from "react"
 
+import { Button } from "@/components/ui/button"
 import { DrawerComponent } from "@/components/ui/drawer"
 import { ContentFooter, ContentHeader } from "@/components/ui/shared"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import {
   AUDIO_LABELS,
   KIND_LABELS,
@@ -21,6 +15,7 @@ import {
   SOURCE_LABELS,
   STATUS_LABELS
 } from "@/constants"
+import { useOverlayState } from "@/hooks"
 
 import type { BrowseFilters } from "../actions/read-filters"
 import { useBrowseQuery, type BrowseQuery } from "../hooks/use-browse-query"
@@ -128,13 +123,13 @@ export function FilterDrawer({ filters }: Readonly<{ filters: BrowseFilters }>) 
   return (
     <>
       <Button
-        className='bg-foreground/5 text-foreground rounded-sm'
+        className='bg-foreground/5 text-foreground h-10 rounded-sm px-3'
         variant='secondary'
-        onPress={handleOpen}>
-        <HugeiconsIcon icon={FilterVerticalIcon} size={20} strokeWidth={2} />
+        onClick={handleOpen}>
+        <HugeiconsIcon className='size-5' icon={FilterVerticalIcon} strokeWidth={2} />
         <span className='font-bold uppercase'>filter</span>
         {activeCount > 0 ? (
-          <span className='bg-theme text-background grid size-5 place-items-center rounded-full text-xs font-bold'>
+          <span className='bg-primary text-primary-foreground grid size-5 place-items-center rounded-full text-xs font-bold'>
             {activeCount}
           </span>
         ) : null}
@@ -200,19 +195,20 @@ export function FilterDrawer({ filters }: Readonly<{ filters: BrowseFilters }>) 
 
           <ContentFooter onClose={control.close}>
             <Button
-              className='bg-theme grow rounded-sm'
+              className='grow rounded-sm'
               type='button'
-              variant='primary'
-              onPress={handleApply}>
+              size='lg'
+              onClick={handleApply}>
               <span className='text-base font-bold uppercase'>apply</span>
             </Button>
 
             <Button
-              className='bg-foreground/5 text-foreground/75 size-9 rounded-sm'
+              className='bg-foreground/5 text-foreground/75 rounded-sm'
               type='button'
               variant='secondary'
-              isIconOnly
-              onPress={handleReset}>
+              size='icon-lg'
+              aria-label='Reset filters'
+              onClick={handleReset}>
               <HugeiconsIcon
                 className='size-5 stroke-2'
                 icon={Refresh01Icon}
@@ -227,18 +223,16 @@ export function FilterDrawer({ filters }: Readonly<{ filters: BrowseFilters }>) 
 }
 
 /**
- * Picks the chosen options back out of a React Aria `Selection`, so values keep their own type (a year stays a
- * number) without casting the keys.
+ * Picks the chosen options back out of the toggle group's string values, so values keep their own type (a year
+ * stays a number) without casting.
  */
 function selectedValues<T extends string | number>(
   options: readonly Option<T>[],
-  selection: Selection
+  values: readonly string[]
 ) {
-  return selection === "all"
-    ? options.map((option) => option.value)
-    : options
-        .filter((option) => selection.has(option.value))
-        .map((option) => option.value)
+  return options
+    .filter((option) => values.includes(String(option.value)))
+    .map((option) => option.value)
 }
 
 /**
@@ -255,8 +249,10 @@ function SingleFilter<T extends string | number>({
   value: T | null
   onChange: (value: T | null) => void
 }>) {
+  const selected = useMemo(() => (value === null ? [] : [String(value)]), [value])
+
   const handleChange = useCallback(
-    (selection: Selection) => onChange(selectedValues(options, selection)[0] ?? null),
+    (values: string[]) => onChange(selectedValues(options, values)[0] ?? null),
     [options, onChange]
   )
 
@@ -264,9 +260,9 @@ function SingleFilter<T extends string | number>({
     <FilterTags
       label={label}
       options={options}
-      selectionMode='single'
-      selectedKeys={value === null ? [] : [value]}
-      onSelectionChange={handleChange}
+      multiple={false}
+      value={selected}
+      onValueChange={handleChange}
     />
   )
 }
@@ -285,8 +281,10 @@ function MultipleFilter<T extends string | number>({
   value: readonly T[]
   onChange: (value: T[]) => void
 }>) {
+  const selected = useMemo(() => value.map(String), [value])
+
   const handleChange = useCallback(
-    (selection: Selection) => onChange(selectedValues(options, selection)),
+    (values: string[]) => onChange(selectedValues(options, values)),
     [options, onChange]
   )
 
@@ -294,53 +292,53 @@ function MultipleFilter<T extends string | number>({
     <FilterTags
       label={label}
       options={options}
-      selectionMode='multiple'
-      selectedKeys={value}
-      onSelectionChange={handleChange}
+      multiple
+      value={selected}
+      onValueChange={handleChange}
     />
   )
 }
 
 /**
- * The tag list both filter kinds render. Options without any season are disabled.
+ * The tag list both filter kinds render. Options without any season are disabled, and keep pointer events so
+ * the not-allowed cursor shows.
  */
 function FilterTags<T extends string | number>({
   label,
   options,
-  selectionMode,
-  selectedKeys,
-  onSelectionChange
+  multiple,
+  value,
+  onValueChange
 }: Readonly<{
   label: string
   options: readonly Option<T>[]
-  selectionMode: "single" | "multiple"
-  selectedKeys: Iterable<T>
-  onSelectionChange: (selection: Selection) => void
+  multiple: boolean
+  value: readonly string[]
+  onValueChange: (values: string[]) => void
 }>) {
-  const disabledKeys = useMemo(
-    () => options.filter((option) => option.count === 0).map((option) => option.value),
-    [options]
-  )
+  const labelId = useId()
 
   return (
-    <TagGroup
-      className='flex flex-col gap-y-3'
-      selectionMode={selectionMode}
-      selectedKeys={selectedKeys}
-      disabledKeys={disabledKeys}
-      onSelectionChange={onSelectionChange}>
-      <Label className='text-base font-bold'>{label}</Label>
-      <TagGroup.List className='flex flex-wrap gap-2'>
+    <div className='flex flex-col gap-y-3'>
+      <p id={labelId} className='text-base font-bold'>
+        {label}
+      </p>
+      <ToggleGroup
+        aria-labelledby={labelId}
+        className='flex-wrap gap-2'
+        multiple={multiple}
+        value={value}
+        onValueChange={onValueChange}>
         {options.map((option) => (
-          <Tag
+          <ToggleGroupItem
             key={option.value}
-            id={option.value}
-            textValue={option.text}
-            className='data-[selected=true]:bg-theme data-[selected=true]:text-background cursor-pointer rounded-sm bg-transparent px-2 py-0.5 text-sm text-zinc-300 data-[disabled=true]:cursor-not-allowed data-[disabled=true]:opacity-30'>
+            value={String(option.value)}
+            disabled={option.count === 0}
+            className='aria-pressed:bg-primary aria-pressed:text-primary-foreground aria-pressed:hover:bg-primary aria-pressed:hover:text-primary-foreground h-auto min-w-0 cursor-pointer rounded-sm bg-transparent px-2 py-0.5 text-sm font-normal text-zinc-300 disabled:pointer-events-auto disabled:cursor-not-allowed disabled:opacity-30'>
             {option.text}
-          </Tag>
+          </ToggleGroupItem>
         ))}
-      </TagGroup.List>
-    </TagGroup>
+      </ToggleGroup>
+    </div>
   )
 }

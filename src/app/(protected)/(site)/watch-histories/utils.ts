@@ -1,8 +1,7 @@
 import { formatDistanceStrict } from "date-fns"
 
-import { KIND_LABELS, type HistoryStatus } from "@/constants"
+import type { HistoryStatus } from "@/constants"
 import { episodeTag, episodeTitle } from "@/libs/episode"
-import { genreText } from "@/libs/genre"
 import { seasonName } from "@/libs/season"
 import { formatSpokenTime, formatTime } from "@/libs/time"
 
@@ -17,8 +16,6 @@ export type HistoryItem = {
   status: HistoryStatus
   title: string
   altTitle: string | null
-  kindLabel: string
-  genres: string[]
   seasonId: string
   episodeLabel: string
   episodeTitle: string | null
@@ -67,8 +64,6 @@ export function toHistoryItem(row: HistoryRow, now: Date): HistoryItem {
     status,
     title: content.title,
     altTitle: altTitle && altTitle !== content.title ? altTitle : null,
-    kindLabel: KIND_LABELS[content.kind],
-    genres: content.genres.map(genreText),
     seasonId: season.id,
     episodeLabel: episodeLabelOf(content.kind, season, episode),
     episodeTitle: episodeTitle(episode),

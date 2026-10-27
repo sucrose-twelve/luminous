@@ -1,9 +1,9 @@
 "use client"
 
+import { PlayIcon, ReplayIcon } from "@keyline-icons/react/fill"
 import Image from "next/image"
 import { useEffect, useId, useRef } from "react"
 
-import { PlayIcon, ReplayIcon } from "@/app/(protected)/watch/components/lmp/icons"
 import { cls } from "@/libs/utils"
 
 import type { LmpAdjacent } from "../types"

@@ -1,6 +1,6 @@
-import { Chip } from "@heroui/react"
 import Image from "next/image"
 
+import { Badge } from "@/components/ui/badge"
 import { KIND_FULL_LABELS, SOURCE_LABELS, STATUS_LABELS } from "@/constants"
 import { genreText } from "@/libs/genre"
 import { airedLabel } from "@/libs/season"
@@ -44,9 +44,7 @@ export function SeasonHero({
         {content.genres.length ? (
           <div className='flex flex-wrap gap-2'>
             {content.genres.map((genre) => (
-              <Chip key={genre} className='bg-theme-500 text-theme-950' size='sm'>
-                <Chip.Label>{genreText(genre)}</Chip.Label>
-              </Chip>
+              <Badge key={genre}>{genreText(genre)}</Badge>
             ))}
           </div>
         ) : null}

@@ -72,6 +72,22 @@ export function primarySource(sources: readonly Content.SeasonSource[]) {
 }
 
 /**
+ * The track an episode's art (thumbnail and sprite sheet, one set for every language) is made from: a dub
+ * first, by language, otherwise the original. Shared by `tests/track.spec.ts` and the control panel's
+ * thumbnail capture, so a hand-picked frame comes from the same video.
+ *
+ * @returns The track, or `undefined` when there are none
+ */
+export function artTrack<T extends { language: string; isDubbed: boolean }>(
+  tracks: readonly T[]
+): T | undefined {
+  return tracks.toSorted(
+    (a, b) =>
+      Number(b.isDubbed) - Number(a.isDubbed) || a.language.localeCompare(b.language)
+  )[0]
+}
+
+/**
  * Builds the folder a season's thumbnails and sprite sheets live in, always `<sourceDir>/Thumbnails/<name>`,
  * from its primary source (`primarySource`: the original, or the first dub when it has none):
  * - a `season`: its season number (`Thumbnails/1`), wherever its source sits (`1` or `Thai Dub/1`)

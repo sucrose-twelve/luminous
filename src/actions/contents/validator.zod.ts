@@ -3,6 +3,7 @@ import { z } from "zod"
 import { KINDS, SEASON_KINDS, SEASON_STATUSES, SOURCES } from "@/constants"
 import { GENRES } from "@/constants/data/genres"
 import { Locales } from "@/constants/enum"
+import { optionalText } from "@/libs/validator.zod"
 
 /**
  * A full absolute path typed or pasted into an import form, e.g. `<CONTENTS_SOURCE_DIR>\\Big Buck Bunny` or
@@ -22,17 +23,6 @@ const mediaPath = z
   )
 
 /**
- * An optional text input: an empty field counts as not given.
- */
-const optionalText = (max: number) =>
-  z
-    .string()
-    .trim()
-    .max(max)
-    .optional()
-    .transform((value) => value || undefined)
-
-/**
  * Import-content form. `slug` falls back to `slugify(title)` in `createContent` when left empty.
  */
 export const contentValidator = z.object({
@@ -49,6 +39,13 @@ export const contentValidator = z.object({
 })
 
 export type ContentValidator = z.infer<typeof contentValidator>
+
+/**
+ * Edit-content form: the content form without `slug`, which follows the title in `updateContent`.
+ */
+export const contentUpdateValidator = contentValidator.omit({ slug: true })
+
+export type ContentUpdateValidator = z.infer<typeof contentUpdateValidator>
 
 /**
  * One audio version of a season. Whether `pathname` exists is checked in `createSeason`.

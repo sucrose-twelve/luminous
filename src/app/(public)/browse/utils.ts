@@ -56,13 +56,6 @@ export function audiosOf(sources: readonly Content.SeasonSource[]) {
 }
 
 /**
- * Escapes `%`, `_`, and `\` so user input is matched literally inside an `ilike` pattern.
- */
-export function escapeLike(text: string) {
-  return text.replace(/[\\%_]/g, "\\$&")
-}
-
-/**
  * Finds the sort option the URL currently describes; no `sort` reads as `released` (the reader's default).
  */
 export function sortOptionOf({

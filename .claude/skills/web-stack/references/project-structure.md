@@ -34,6 +34,7 @@ src/
 ├── app/
 │   ├── (public)/         Routes anyone can open (home, browse, content detail)
 │   ├── (protected)/      Routes that require a session (watch, my list, history, settings)
+│   ├── (controls)/       Staff control panel at /ctrl (components/, hooks/, actions/ shared within the group)
 │   ├── (labs)/           Throwaway test UIs: plain HTML, no Tailwind/styling (see below)
 │   ├── api/              Route Handlers only for non-UI responses (video bytes, art, beacons)
 │   ├── error-boundary/   Error page that ErrorBoundary() redirects to

@@ -148,7 +148,7 @@ function PlaylistContent({
       <ol
         ref={listRef}
         aria-label={season ? seasonName(season) : "Episodes"}
-        className='relative flex min-h-0 grow [scrollbar-width:none] flex-col gap-1 overflow-y-auto overscroll-contain p-4'>
+        className='relative flex min-h-0 grow scrollbar-none flex-col gap-1 overflow-y-auto overscroll-contain p-4'>
         {episodes.map((episode) => (
           <PlaylistItem
             key={episode.id}

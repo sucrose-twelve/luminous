@@ -1,7 +1,9 @@
 import { cookies } from "next/headers"
+import { redirect } from "next/navigation"
 import type { NextRequest } from "next/server"
 
-import { APP_TOKEN } from "@/constants"
+import { APP_TOKEN, CONTROL_HOME } from "@/constants"
+import { isStaff } from "@/libs/account"
 
 import { ErrorBoundary } from "../error"
 import { resolveSession, type AuthAccount } from "./read"
@@ -31,6 +33,44 @@ export function withAuth<T extends unknown[], R>(action: AuthAction<T, R>) {
     }
 
     return action(session.account, ...args)
+  }
+}
+
+/**
+ * `withAuth` for code only some roles may run, such as the control panel's (`STAFF_ROLES`).
+ *
+ * The role is the account's role in the DB (`resolveSession`), never the one in the token. Any other role
+ * redirects through `ErrorBoundary` with `403`.
+ *
+ * @param roles - The roles allowed to run `action`
+ *
+ * @example
+ * ```ts
+ * export const updateContent = withRole(STAFF_ROLES, async (account, input: unknown) => { … })
+ * ```
+ */
+export function withRole<T extends unknown[], R>(
+  roles: readonly Account.Role[],
+  action: AuthAction<T, R>
+) {
+  return withAuth<T, R>(async (account, ...args) => {
+    if (!roles.includes(account.role)) {
+      ErrorBoundary("403 Forbidden")
+    }
+
+    return action(account, ...args)
+  })
+}
+
+/**
+ * Sends a staff account (`isStaff`) to the control panel: staff run `/ctrl` only, so every site layout calls
+ * this with the account it read.
+ *
+ * @param account - The signed-in account, or `null` for a visitor (left where they are)
+ */
+export function redirectStaff(account: AuthAccount | null) {
+  if (account && isStaff(account.role)) {
+    redirect(CONTROL_HOME)
   }
 }
 

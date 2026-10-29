@@ -9,7 +9,8 @@ import { z } from "zod"
 
 import { db, schema } from "@/drizzle"
 import { COLOR, logger } from "@/libs/logger"
-import { primarySource, seasonArtDirectory } from "@/libs/media"
+import { writeThumbnail } from "@/libs/ffmpeg"
+import { artTrack, primarySource, seasonArtDirectory } from "@/libs/media"
 
 import {
   missingTools,
@@ -21,7 +22,7 @@ import {
 import { readTrackFile } from "./tracks/mp4"
 import { findSourceFiles, type EpisodeFile } from "./tracks/source"
 import { spriteGrid, writeSprite } from "./tracks/sprite"
-import { writeThumbnail } from "./tracks/thumbnail"
+import { thumbnailTime } from "./tracks/thumbnail"
 import { errorMessage, fileStem, toStoredPath } from "./tracks/utils"
 import { argsValidator, type ArgsValidator } from "./tracks/validator.zod"
 
@@ -238,7 +239,8 @@ async function importTracks(
 
 /**
  * Creates each episode's thumbnail and hover-preview sprite sheet from a dubbed track (`isDubbed: true`, the
- * first by language) when the episode has one, otherwise from its original, one set shared by every language.
+ * first by language) when the episode has one, otherwise from its original (`artTrack`), one set shared by every
+ * language.
  *
  * An existing thumbnail is kept (it may be hand-picked) and an existing sprite whose grid matches the DB is
  * kept; `force` regenerates both. The DB is updated per episode, right after its files, so a crash midway
@@ -254,12 +256,8 @@ async function generateArt(
 
   for (const episode of episodes) {
     const artStartedAt = new Date()
-    const track = tracks
-      .filter((item) => item.episodeNo === episode.episodeNo)
-      .toSorted(
-        (a, b) =>
-          Number(b.isDubbed) - Number(a.isDubbed) || a.language.localeCompare(b.language)
-      )[0]
+    const track = artTrack(tracks.filter((item) => item.episodeNo === episode.episodeNo))
+    if (!track) continue
 
     const stem = fileStem(episode.episodeNo)
     const thumbnail = toStoredPath(path.join(directory, `${stem}.webp`))
@@ -268,7 +266,7 @@ async function generateArt(
     const done: string[] = []
 
     if (force || !fs.existsSync(thumbnail)) {
-      await writeThumbnail(track.path, track.duration, episode.skips, thumbnail)
+      await writeThumbnail(track.path, thumbnailTime(track.duration, episode.skips), thumbnail)
       done.push("thumbnail")
     }
 

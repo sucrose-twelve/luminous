@@ -41,32 +41,6 @@ export function missingTools() {
 }
 
 /**
- * Scales a frame into a box without stretching it, letterboxing the rest (a 4:3 source gets side bars).
- */
-export function fitFilter(width: number, height: number) {
-  return `scale=${width}:${height}:force_original_aspect_ratio=decrease,pad=${width}:${height}:(ow-iw)/2:(oh-ih)/2,setsar=1`
-}
-
-/**
- * Runs ffmpeg into `<target>.tmp.webp`, then renames it over `target`, so a crash never leaves half a file at
- * the real path.
- */
-export async function writeWebp(target: string, args: string[]) {
-  const temp = target.replace(/\.webp$/, ".tmp.webp")
-
-  try {
-    execFileSync("ffmpeg", ["-v", "error", "-y", ...args, temp], {
-      stdio: ["ignore", "ignore", "pipe"],
-      maxBuffer: 1024 * 1024 * 64 // 64 Megabytes
-    })
-    await fs.promises.rename(temp, target)
-  } catch (error) {
-    await fs.promises.rm(temp, { force: true })
-    throw error
-  }
-}
-
-/**
  * Where `--remux` keeps a replaced file: `<folder>/.original/<name>.mp4`.
  */
 function backupPath(filePath: string) {

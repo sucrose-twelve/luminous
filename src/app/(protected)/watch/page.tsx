@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { z } from "zod"
 
+import { readSessionAccount, redirectStaff } from "@/actions/auth"
 import { clientInfo } from "@/actions/client"
 
 import {
@@ -37,6 +38,11 @@ export async function generateMetadata({
 }
 
 export default async function Watch({ searchParams }: NextSearchParams) {
+  /**
+   * The player has no site layout to do it, so the page sends staff to the control panel itself.
+   */
+  redirectStaff(await readSessionAccount())
+
   const { userAgent } = await clientInfo()
   const unsupported = browserNotice(userAgent)
   if (unsupported) return <WatchNotice kind={unsupported} />

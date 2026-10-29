@@ -52,22 +52,26 @@ bunx prettier --write src/components/ui/<name>.tsx
 
 ## Installed components
 
-| `components/ui/` file                                          | Used for                                    | Animated |
-| -------------------------------------------------------------- | ------------------------------------------- | -------- |
-| `button`                                                       | Buttons, and `buttonVariants` for links     | —        |
-| `badge`                                                        | Chips on cards (kind, status, genre, audio) | —        |
-| `dialog`                                                       | Sign-in modal, `ModalComponent`             | ✓        |
-| `alert-dialog`                                                 | Confirmations (Remove from history)         | ✓        |
-| `sheet`                                                        | `DrawerComponent` (filter drawer)           | ✓        |
-| `dropdown-menu`                                                | Account menu, mobile nav                    | ✓        |
-| `select`                                                       | Sort and kind selects                       | ✓        |
-| `tooltip`                                                      | Header icon links, truncated breadcrumb     | ✓        |
-| `toggle`, `toggle-group`                                       | Tabs and segments, filter tags              | ✓        |
-| `checkbox`                                                     | Keep me signed in                           | ✓        |
-| `progress`                                                     | Watch progress                              | ✓        |
-| `pagination`                                                   | Pager layout                                | —        |
-| `field`, `input`, `input-group`, `label`, `textarea`           | Sign-in form, header search                 | —        |
-| `spinner`, `kbd`, `alert`, `avatar`, `separator`, `breadcrumb` | As named                                    | —        |
+| `components/ui/` file                                          | Used for                                                    | Animated |
+| -------------------------------------------------------------- | ----------------------------------------------------------- | -------- |
+| `button`                                                       | Buttons, and `buttonVariants` for links                     | —        |
+| `badge`                                                        | Chips on cards (kind, status, genre, audio)                 | —        |
+| `dialog`                                                       | Sign-in modal, `ModalComponent`                             | ✓        |
+| `alert-dialog`                                                 | Confirmations (Remove from history)                         | ✓        |
+| `sheet`                                                        | `DrawerComponent` (filter drawer)                           | ✓        |
+| `dropdown-menu`                                                | Account menu, mobile nav                                    | ✓        |
+| `select`                                                       | Sort and kind selects                                       | ✓        |
+| `tooltip`                                                      | Header icon links, truncated breadcrumb                     | ✓        |
+| `toggle`, `toggle-group`                                       | Tabs and segments, filter tags                              | ✓        |
+| `checkbox`                                                     | Keep me signed in                                           | ✓        |
+| `progress`                                                     | Watch progress                                              | ✓        |
+| `pagination`                                                   | Pager layout                                                | —        |
+| `field`, `input`, `input-group`, `label`, `textarea`           | Sign-in form, header search                                 | —        |
+| `spinner`, `kbd`, `alert`, `avatar`, `separator`, `breadcrumb` | As named                                                    | —        |
+| `table`                                                        | Control panel tables (no `"use client"`)                    | —        |
+| `sonner`                                                       | Control panel toasts (`Toaster` in `(controls)/layout.tsx`) | —        |
+| `combobox`                                                     | Genre picker in the content form                            | ✓        |
+| `slider`                                                       | Skip editor range                                           | ✓        |
 
 - Button `variant`: `default | outline | secondary | ghost | destructive | link`; `size`:
   `default | xs | sm | lg | icon | icon-xs | icon-sm | icon-lg`.
@@ -154,6 +158,8 @@ bunx prettier --write src/components/ui/<name>.tsx
 
 - shadcn components use Hugeicons (`iconLibrary: "hugeicons"` in `components.json`), like
   the rest of the site.
+- The control panel's sortable table heads use `@keyline-icons/react/two-tone`
+  (`ArrowDownUp`, `ArrowDownUp2` asc, `ArrowDownUp3` desc; size 14, `strokeWidth` 1.5).
 - The player uses `@keyline-icons/react/fill` (`PlayIcon`, `PauseIcon`, …; `size` prop,
   default 24). The only exceptions are the 10-second seek icons, `Backward10sIcon` /
   `Forward10sIcon` in `lmp/icons/`.

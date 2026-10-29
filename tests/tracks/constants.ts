@@ -50,9 +50,6 @@ export const PLAIN_CODECS: Record<string, string> = {
   "ec-3": "ec-3"
 }
 
-export const THUMBNAIL_WIDTH = 640
-export const THUMBNAIL_HEIGHT = 360
-
 /**
  * Seconds after the end of the intro to grab the thumbnail at; without an intro skip, the fraction of the episode
  * instead. Both stay clear of the black frames and opening at the start.

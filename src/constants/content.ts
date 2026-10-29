@@ -125,6 +125,32 @@ export const SEASONAL_LABELS: Record<Seasonal, string> = {
   fall: "Fall"
 }
 
+export const EPISODE_KINDS = [
+  "regular",
+  "special",
+  "ova",
+  "recap"
+] as const satisfies readonly Content.EpisodeKind[]
+
+export const EPISODE_KIND_LABELS: Record<Content.EpisodeKind, string> = {
+  regular: "Regular",
+  special: "Special",
+  ova: "OVA",
+  recap: "Recap"
+}
+
+export const SKIP_KINDS = [
+  "intro",
+  "outro",
+  "recap"
+] as const satisfies readonly Content.Skip["kind"][]
+
+export const SKIP_KIND_LABELS: Record<Content.Skip["kind"], string> = {
+  intro: "Intro",
+  outro: "Outro",
+  recap: "Recap"
+}
+
 /**
  * What an untitled episode other than a regular one is tagged, by kind (`episodeTag`).
  */

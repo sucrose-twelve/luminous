@@ -10,7 +10,7 @@ bun tests/track.spec.ts --season 019a2b3c-…
 bun tests/track.spec.ts --season 019a2b3c-… --remux --force
 ```
 
-ซีซันต้องถูกสร้างไว้ก่อนแล้ว (ผ่านหน้า `/import-season` ใน `src/app/(labs)/`) สคริปต์จะอ่านว่าไฟล์อยู่ที่ไหนจาก `seasons.sources`
+ซีซันต้องถูกสร้างไว้ก่อนแล้ว (ปุ่ม New season ในหน้า content ของ control panel `/ctrl/contents/[contentId]`) สคริปต์จะอ่านว่าไฟล์อยู่ที่ไหนจาก `seasons.sources`
 
 ## ตัวเลือก
 
@@ -104,10 +104,10 @@ bun tests/track.spec.ts --season 019a2b3c-… --remux --force
 | `tracks/constants.ts` | ค่าที่ปรับได้: รูปแบบชื่อไฟล์, codec ที่ copy ได้, ขนาดภาพ, ช่วงของ sprite, ค่าเผื่อความยาวตอนรีมักซ์ |
 | `tracks/source.ts` | หาไฟล์ตอนของ source แต่ละอัน (`findSourceFiles`) |
 | `tracks/ffprobe.ts` | อ่านความยาวและ stream ของไฟล์ |
-| `tracks/ffmpeg.ts` | เช็กเครื่องมือ, วางแผนและรันการรีมักซ์, ลบไฟล์สำรอง, เขียน WebP |
+| `tracks/ffmpeg.ts` | เช็กเครื่องมือ, วางแผนและรันการรีมักซ์, ลบไฟล์สำรอง (เขียน WebP อยู่ `src/libs/ffmpeg.ts` ใช้ร่วมกับ control panel) |
 | `tracks/mp4.ts` | อ่าน box ของ MP4 (`moov`, `moof`) หา `initEnd`, codec และดัชนี fragment โดยไม่โหลดทั้งไฟล์ |
 | `tracks/codec.ts` | สร้าง codec string แบบ RFC 6381 (`avc1.640028`, `hvc1.1.6.L93.B0`, `mp4a.40.2`) จาก `stsd` |
-| `tracks/thumbnail.ts` | เลือกวินาทีและถ่าย thumbnail |
+| `tracks/thumbnail.ts` | เลือกวินาทีที่ถ่าย thumbnail (ตัวถ่ายคือ `writeThumbnail` ใน `src/libs/ffmpeg.ts`) |
 | `tracks/sprite.ts` | คำนวณ grid และสร้าง sprite sheet |
 | `tracks/utils.ts` | แปลง path, เติมเลขตอนเป็น 2 หลัก, อ่าน box header และข้อความ error |
 

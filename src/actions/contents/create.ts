@@ -1,73 +1,26 @@
 "use server"
 
-import path from "node:path"
-
 import { eq, sql } from "drizzle-orm"
 import { updateTag } from "next/cache"
 import { z } from "zod"
 
+import { withRole } from "@/actions/auth"
+import { STAFF_ROLES } from "@/constants"
 import { db, schema } from "@/drizzle"
 import { contentColumns, seasonColumns } from "@/drizzle/table-columns"
-import {
-  IMAGE_EXTENSIONS,
-  isSafeMediaPath,
-  pathType,
-  primarySource,
-  VIDEO_EXTENSIONS
-} from "@/libs/media"
+import { primarySource } from "@/libs/media"
 import { slugify } from "@/libs/utils"
 
+import { checkArtPath, checkSourceDir, checkSourcePath } from "./paths"
 import { contentValidator, seasonValidator } from "./validator.zod"
 
 /**
- * Checks that an art path is an existing image given by its full path: the same rule the art route applies
- * before serving it. Posters may sit in any folder.
+ * Creates a content from the control panel's content form. Staff only.
  *
- * @returns An error message, or `null` when the path is fine
+ * Expected failures are returned, not thrown: field errors from Zod or the source directory check
+ * (`checkSourceDir`), or a `message` when the slug is already taken.
  */
-async function checkArtPath(filePath: string) {
-  if (!isSafeMediaPath(filePath, null, IMAGE_EXTENSIONS)) {
-    return `Must be a full path to a ${IMAGE_EXTENSIONS.join(" / ")} file`
-  }
-
-  return (await pathType(filePath)) === "file" ? null : "File not found"
-}
-
-/**
- * Checks one season source: a movie's is an `.mp4` file, any other kind's a folder of `01.mp4`, `02.mp4`, …
- * Any source but the primary one may be listed before its files exist (`tests/track.spec.ts` skips it).
- *
- * @param isPrimary - Whether this is the season's `primarySource`, which has to be on disk
- * @returns An error message prefixed with the source's language, or `null` when the source is fine
- */
-async function checkSourcePath(
-  { language, pathname }: Content.SeasonSource,
-  kind: Content.SeasonKind,
-  isPrimary: boolean
-) {
-  const isMovie = kind === "movie"
-  if (
-    isMovie
-      ? !isSafeMediaPath(pathname, null, VIDEO_EXTENSIONS)
-      : !path.isAbsolute(pathname)
-  ) {
-    return `${language}: Must be a full path to ${isMovie ? `a ${VIDEO_EXTENSIONS.join(" / ")} file` : "a folder"}`
-  }
-
-  const type = await pathType(pathname)
-  if (type === (isMovie ? "file" : "directory") || (type === null && !isPrimary))
-    return null
-
-  return `${language}: ${type === null ? "Not found" : `Must be a ${isMovie ? "file" : "folder"}`}`
-}
-
-/**
- * Imports a content from the import form.
- *
- * Expected failures are returned, not thrown: field errors from Zod, or a `message` when the slug is already
- * taken.
- */
-export async function createContent(input: unknown) {
+export const createContent = withRole(STAFF_ROLES, async (_account, input: unknown) => {
   const parsed = contentValidator.safeParse(input)
   if (!parsed.success) {
     return { ok: false as const, errors: z.flattenError(parsed.error).fieldErrors }
@@ -82,6 +35,11 @@ export async function createContent(input: unknown) {
     }
   }
 
+  const sourceDirError = await checkSourceDir(values.sourceDir)
+  if (sourceDirError) {
+    return { ok: false as const, errors: { sourceDir: [sourceDirError] } }
+  }
+
   const [content] = await db
     .insert(schema.contents)
     .values({ ...values, slug })
@@ -94,16 +52,16 @@ export async function createContent(input: unknown) {
 
   updateTag("contents/list")
   return { ok: true as const, content }
-}
+})
 
 /**
- * Imports a season from the import form after checking its sources (see `checkSourcePath`) and that `poster`
- * is an existing image, which may sit in any folder.
+ * Creates a season from the control panel's season form after checking its sources (see `checkSourcePath`)
+ * and that `poster` is an existing image, which may sit in any folder. Staff only.
  *
  * Expected failures are returned, not thrown, like `createContent`: also a `message` when another season was
  * already imported from the same primary source, or has the same season number.
  */
-export async function createSeason(input: unknown) {
+export const createSeason = withRole(STAFF_ROLES, async (_account, input: unknown) => {
   const parsed = seasonValidator.safeParse(input)
   if (!parsed.success) {
     return { ok: false as const, errors: z.flattenError(parsed.error).fieldErrors }
@@ -178,4 +136,4 @@ export async function createSeason(input: unknown) {
 
   updateTag("seasons/list")
   return { ok: true as const, season }
-}
+})

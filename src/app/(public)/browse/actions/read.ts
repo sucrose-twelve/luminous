@@ -8,22 +8,21 @@ import {
   desc,
   eq,
   gte,
-  ilike,
   lt,
   notInArray,
-  or,
   sql,
   type SQL
 } from "drizzle-orm"
 import { pick } from "es-toolkit"
 import { z } from "zod"
 
+import { seasonSearch, seasonSearchRank } from "@/actions/contents/search"
 import { ADULT_KINDS, AUDIO_LANGUAGES, SEASONALS } from "@/constants"
 import { db, schema } from "@/drizzle"
 import { contentColumns, seasonColumns } from "@/drizzle/table-columns"
 import { lastPageOf, toPagination, withPagination } from "@/drizzle/utils"
 
-import { audiosOf, escapeLike, releasedRange } from "../utils"
+import { audiosOf, releasedRange } from "../utils"
 import { browseValidator, type BrowseValidator } from "../validator.zod"
 
 /**
@@ -149,17 +148,7 @@ function browseFilters({
   }
 
   if (search) {
-    /**
-     * `ilike` catches exact substrings (also queries under 3 characters, which have too few trigrams to be
-     * similar to anything); `<%` catches typos. Both are served by the trigram indexes.
-     */
-    const pattern = `%${escapeLike(search)}%`
-    const searches = or(
-      ilike(schema.contents.searchText, pattern),
-      ilike(schema.seasons.title, pattern),
-      sql`${search} <% ${schema.contents.searchText}`,
-      sql`${search} <% ${schema.seasons.title}`
-    )
+    const searches = seasonSearch(search)
     if (searches) filters.push(searches)
   }
 
@@ -179,7 +168,7 @@ function browseOrder({ sort, order, search }: BrowseValidator) {
 
   if (sortBy === "relevance" && search) {
     return [
-      sql`greatest(word_similarity(${search}, ${schema.contents.searchText}), word_similarity(${search}, coalesce(${schema.seasons.title}, ''))) desc`,
+      seasonSearchRank(search),
       sql`${schema.seasons.releasedOn} desc nulls last`,
       asc(schema.seasons.id)
     ]

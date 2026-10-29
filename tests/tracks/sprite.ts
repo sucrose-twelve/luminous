@@ -1,5 +1,6 @@
+import { fitFilter, writeWebp } from "@/libs/ffmpeg"
+
 import { SPRITE_INTERVAL, SPRITE_INTERVAL_STEP, SPRITE_TILE, WEBP_MAX_DIMENSION } from "./constants"
-import { fitFilter, writeWebp } from "./ffmpeg"
 
 /**
  * Lays out the sprite sheet for a duration: one tile every `interval` seconds, widening `interval` until the

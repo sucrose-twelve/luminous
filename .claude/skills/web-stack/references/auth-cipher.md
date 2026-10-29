@@ -137,6 +137,8 @@ cookieStore.set(APP_TOKEN, token, {
 | Where                            | Use                                                                                                              |
 | -------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
 | Server Actions, server readers   | `withAuth(async (account, ...args) => …)`. `account` is `AuthAccount` (no password)                              |
+| Staff-only actions, readers     | `withRole(STAFF_ROLES, async (account, ...args) => …)`: `withAuth` plus the DB role, `403` otherwise            |
+| Site layouts, `/watch`           | `redirectStaff(account)`: staff (`isStaff`) use `/ctrl` only and are sent there                                  |
 | Route Handlers (`/api/stream/…`) | `const account = await withGuard(request)` → `401` if `null`                                                     |
 | `(protected)` layout / pages     | `resolveSession(cookie)` → when `!ok`, render the page with the sign-in modal open (there is no `/sign-in` page) |
 | `proxy.ts` (optional)            | Only "no cookie → redirect". Never decrypt or hit the DB there                                                   |

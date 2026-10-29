@@ -76,3 +76,10 @@ export const genres = [
 ]
 
 export const GENRES = genres.map((genre) => genre.slug)
+
+/**
+ * Each genre's display text by slug, for chips and pickers.
+ */
+export const GENRE_LABELS: Record<string, string> = Object.fromEntries(
+  genres.map((genre) => [genre.slug, genre.text])
+)

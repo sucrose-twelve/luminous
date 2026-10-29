@@ -61,6 +61,12 @@ export async function readWatchEpisode(episodeId: string) {
   if (!first) return null
 
   const { episode, season, content } = first
+  /**
+   * The episode carries its season's and content's names, so editing either in the control panel must reach
+   * it; tagging by them lets those edits expire one tag instead of every episode below.
+   */
+  cacheTag(`contents/${content.id}`, `seasons/${season.id}`)
+
   return {
     episode,
     season,

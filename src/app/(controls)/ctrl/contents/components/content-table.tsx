@@ -19,16 +19,19 @@ import type { ControlContentRow } from "../actions/read"
 const VISIBLE_GENRES = 3
 
 /**
- * The contents table, each title with the poster of its latest season. The title opens the content's page; `⋯` edits it, adds a season, or copies its ID.
+ * The contents table, each title with the poster of its latest season. `canDelete` (root) adds Delete to the
+ * row menu. The title opens the content's page; `⋯` edits it, adds a season, or copies its ID.
  */
 export function ContentTable({
   rows,
   current,
-  empty
+  empty,
+  canDelete
 }: Readonly<{
   rows: ControlContentRow[]
   current: { sort: string; order: Order }
   empty: React.ReactNode
+  canDelete: boolean
 }>) {
   return (
     <Table>
@@ -130,6 +133,7 @@ export function ContentTable({
               <TableCell>
                 <ContentActions
                   variant='menu'
+                  canDelete={canDelete}
                   content={{
                     id: row.id,
                     slug: row.slug,

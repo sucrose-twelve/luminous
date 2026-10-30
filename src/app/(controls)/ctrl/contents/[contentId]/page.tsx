@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { z } from "zod"
 
+import { readSessionAccount } from "@/actions/auth"
 import { readSeasonRows } from "@/app/(controls)/actions/read"
 import { ContentActions } from "@/app/(controls)/components/content-actions"
 import {
@@ -63,7 +64,7 @@ export default async function ControlContent({
   if (!z.uuid().safeParse(contentId).success) notFound()
 
   const query = queryValidator.parse(await searchParams)
-  const [content, { data, ...page }] = await Promise.all([
+  const [content, { data, ...page }, viewer] = await Promise.all([
     readControlContent(contentId),
     readSeasonRows(
       {
@@ -72,7 +73,8 @@ export default async function ControlContent({
         statuses: query.status ? [query.status] : []
       },
       query
-    )
+    ),
+    readSessionAccount()
   ])
   if (!content) notFound()
 
@@ -88,7 +90,13 @@ export default async function ControlContent({
         { label: "Contents", href: "/ctrl/contents" },
         { label: content.title }
       ]}
-      actions={<ContentActions variant='buttons' content={content} />}
+      actions={
+        <ContentActions
+          variant='buttons'
+          content={content}
+          canDelete={viewer?.role === "root"}
+        />
+      }
       aside={
         <PanelBody>
           <ContentDetails content={content} />

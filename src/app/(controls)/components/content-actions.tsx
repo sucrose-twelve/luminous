@@ -3,6 +3,7 @@
 import {
   Add01Icon,
   Copy01Icon,
+  Delete02Icon,
   MoreHorizontalIcon,
   PencilEdit02Icon
 } from "@hugeicons/core-free-icons"
@@ -15,11 +16,13 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
 import { useOverlayState } from "@/hooks"
 
 import { ContentFormModal, type EditableContent } from "./content-form"
+import { DeleteContentDialog } from "./delete-content"
 import { SeasonFormModal } from "./season-form"
 
 /**
@@ -41,14 +44,21 @@ export function NewContentButton() {
 
 /**
  * Edit content and New season, as buttons on a content's page or as a row's `⋯` menu in the contents table
- * (`variant='menu'`, which also copies the ID).
+ * (`variant='menu'`, which also copies the ID). Root also gets Delete (`canDelete`); deleting from the content's
+ * own page goes back to the contents list.
  */
 export function ContentActions({
   content,
-  variant
-}: Readonly<{ content: EditableContent; variant: "buttons" | "menu" }>) {
+  variant,
+  canDelete = false
+}: Readonly<{
+  content: EditableContent
+  variant: "buttons" | "menu"
+  canDelete?: boolean
+}>) {
   const editModal = useOverlayState()
   const seasonModal = useOverlayState()
+  const deleteModal = useOverlayState()
 
   const handleCopyId = useCallback(async () => {
     try {
@@ -86,10 +96,29 @@ export function ContentActions({
               <HugeiconsIcon icon={Copy01Icon} strokeWidth={2} />
               Copy ID
             </DropdownMenuItem>
+            {canDelete ? (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem variant='destructive' onClick={deleteModal.open}>
+                  <HugeiconsIcon icon={Delete02Icon} strokeWidth={2} />
+                  Delete content
+                </DropdownMenuItem>
+              </>
+            ) : null}
           </DropdownMenuContent>
         </DropdownMenu>
       ) : (
         <div className='flex gap-2'>
+          {canDelete ? (
+            <Button variant='destructive' onClick={deleteModal.open}>
+              <HugeiconsIcon
+                icon={Delete02Icon}
+                strokeWidth={2}
+                data-icon='inline-start'
+              />
+              Delete
+            </Button>
+          ) : null}
           <Button variant='outline' onClick={editModal.open}>
             <HugeiconsIcon
               icon={PencilEdit02Icon}
@@ -107,6 +136,13 @@ export function ContentActions({
 
       <ContentFormModal control={editModal} content={content} />
       <SeasonFormModal control={seasonModal} content={content} />
+      {canDelete ? (
+        <DeleteContentDialog
+          control={deleteModal}
+          content={content}
+          redirectTo={variant === "buttons" ? "/ctrl/contents" : undefined}
+        />
+      ) : null}
     </>
   )
 }

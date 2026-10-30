@@ -22,6 +22,11 @@ export const ROLE_LABELS: Record<Account.Role, string> = {
  */
 export const STAFF_ROLES: readonly Account.Role[] = ["root", "admin"]
 
+/**
+ * Roles for control panel actions that can't be undone, such as deleting a content with its files on disk.
+ */
+export const ROOT_ROLES: readonly Account.Role[] = ["root"]
+
 export const TOKEN = {
   PREFIX: "luminous",
   /**

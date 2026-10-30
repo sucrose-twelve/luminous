@@ -134,6 +134,25 @@
   Other dubs can be added before their files are ready."
 - สำเร็จ → ไป `/ctrl/seasons/[newId]` ที่มีปุ่ม Import command (season-page §2.3)
 
+### 4.1 ลบ content (`root` เท่านั้น)
+
+- ปุ่ม **Delete** (หน้า content) และ **Delete content** ในเมนู ⋯ ของตาราง เห็นเฉพาะ `root`
+- modal ยืนยัน (`DeleteContentDialog`): บอกสิ่งที่จะหายและ path ของ `sourceDir` ต้องพิมพ์
+  slug ให้ตรงก่อนปุ่ม **Delete permanently** จะกดได้ (server ตรวจซ้ำ)
+- `deleteContent` (`@/actions/contents/delete.ts`, `withRole(ROOT_ROLES, …)`) เป็น hard
+  delete:
+  - ลบแถว `contents` แล้ว FK cascade ลบ seasons, episodes, tracks, `watch_histories`,
+    `watchlists`
+  - ลบโฟลเดอร์ `sourceDir` ทั้งโฟลเดอร์
+- ไม่ลบอะไรเลยถ้า: `sourceDir` ไม่ใช่ path เต็ม · เป็น drive root · ครอบโฟลเดอร์ของแอป ·
+  ซ้อนกับโฟลเดอร์ของ content อื่น (ทั้งสองทาง) · มีไฟล์ของ content อื่น (poster, source,
+  thumbnail, sprite, track) อยู่ข้างใน
+- ลำดับ: rename โฟลเดอร์ไปข้าง ๆ ก่อน (ล้มถ้ามีไฟล์เปิดอยู่ เช่นกำลัง stream →
+  ไม่ลบอะไรเลย) → ลบใน DB (ล้ม → rename กลับ) → ลบไฟล์ (ล้ม → แจ้ง path ที่เหลือให้ลบเอง)
+- ไฟล์ของ content นี้ที่อยู่นอก `sourceDir` (เช่น poster ที่อยู่ที่อื่น) ไม่ถูกลบ
+  แจ้งจำนวนใน toast
+- ลบจากหน้า content แล้วกลับไป `/ctrl/contents`
+
 ## 5. Edge cases
 
 - content ที่ไม่มี season: ตาราง §2.2 ว่าง, browse ไม่แสดง content นี้ (browse นับจาก

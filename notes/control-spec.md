@@ -253,7 +253,8 @@ src/app/(controls)/
   (`formState.isDirty`)
 - ช่อง path ทุกช่องใช้ `mediaPath` (รับ "Copy as path" ของ Windows ได้) และตรวจบน disk
   ฝั่ง server แบบ `createSeason`
-- ลบข้อมูล (content / season / episode) ไม่มีใน v1 (Q7)
+- ลบ content ได้เฉพาะ `root` (hard delete: DB + `sourceDir` บน disk, content-page §4.1) ·
+  season / episode ยังลบไม่ได้ (Q7)
 
 ## 8. Data & cache
 
@@ -319,19 +320,19 @@ optimize แล้วตาม max-age นั้น ถ่าย thumbnail ใ�
 
 ## 11. การตัดสินใจ (ตอบแล้ว 2026-10-27)
 
-| #   | เรื่อง                        | คำตอบ                                                                      |
-| --- | ----------------------------- | -------------------------------------------------------------------------- |
-| Q1  | route group แทน rewrites      | ใช้ `(controls)/ctrl`                                                      |
-| Q2  | breakpoint                    | 1440px ตามเดิม                                                             |
-| Q3  | `root` vs `admin`             | ตอนนี้เท่ากัน · อนาคต action ที่จัดการไฟล์บน disk (`node:fs`) เป็นของ root |
-| Q4  | ปุ่ม settings ใน header       | ยังไม่ใส่                                                                  |
-| Q5  | search                        | ไป `/ctrl/seasons` เสมอ                                                    |
-| Q6  | toast                         | **เพิ่ม** (`sonner`)                                                       |
-| Q7  | ลบ content / season / episode | ไม่มีใน v1                                                                 |
-| Q8  | import                        | copy คำสั่งพอ · **ยกเลิก** queue                                           |
-| Q9  | สี chip                       | โทน soft `bg-*-500/15 text-*-300`                                          |
-| Q10 | version ใน URL รูป            | **ไม่ทำ** ยอมรับ cache 1–2 วัน                                             |
-| Q11 | ไอคอนหัวตารางตอนยังไม่ sort   | `ArrowDownUp` สี muted                                                     |
+| #   | เรื่อง                        | คำตอบ                                                                                                          |
+| --- | ----------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Q1  | route group แทน rewrites      | ใช้ `(controls)/ctrl`                                                                                          |
+| Q2  | breakpoint                    | 1440px ตามเดิม                                                                                                 |
+| Q3  | `root` vs `admin`             | ตอนนี้เท่ากัน · อนาคต action ที่จัดการไฟล์บน disk (`node:fs`) เป็นของ root                                     |
+| Q4  | ปุ่ม settings ใน header       | ยังไม่ใส่                                                                                                      |
+| Q5  | search                        | ไป `/ctrl/seasons` เสมอ                                                                                        |
+| Q6  | toast                         | **เพิ่ม** (`sonner`)                                                                                           |
+| Q7  | ลบ content / season / episode | content: `root` เท่านั้น, hard delete ทั้ง DB และ `sourceDir` (content-page §4.1) · season / episode: ยังไม่มี |
+| Q8  | import                        | copy คำสั่งพอ · **ยกเลิก** queue                                                                               |
+| Q9  | สี chip                       | โทน soft `bg-*-500/15 text-*-300`                                                                              |
+| Q10 | version ใน URL รูป            | **ไม่ทำ** ยอมรับ cache 1–2 วัน                                                                                 |
+| Q11 | ไอคอนหัวตารางตอนยังไม่ sort   | `ArrowDownUp` สี muted                                                                                         |
 
 คำตอบเฉพาะหน้าอยู่ท้ายไฟล์ย่อย (C1…, S1…, A1…)
 

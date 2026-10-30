@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 
+import { readSessionAccount } from "@/actions/auth"
 import { NewContentButton } from "@/app/(controls)/components/content-actions"
 import { ControlPage, TableCard } from "@/app/(controls)/components/control-page"
 import { TablePager } from "@/app/(controls)/components/table-pager"
@@ -22,7 +23,10 @@ export const metadata: Metadata = { title: "Contents" }
  */
 export default async function Contents({ searchParams }: NextSearchParams) {
   const query = queryValidator.parse(await searchParams)
-  const { data, ...page } = await readControlContents(query)
+  const [{ data, ...page }, viewer] = await Promise.all([
+    readControlContents(query),
+    readSessionAccount()
+  ])
   const isFiltered =
     query.kind.length > 0 || query.source.length > 0 || query.genres.length > 0
 
@@ -37,6 +41,7 @@ export default async function Contents({ searchParams }: NextSearchParams) {
           rows={data}
           current={{ sort: query.sort, order: query.order }}
           empty={isFiltered ? "No contents match these filters." : "No contents yet."}
+          canDelete={viewer?.role === "root"}
         />
       </TableCard>
     </ControlPage>

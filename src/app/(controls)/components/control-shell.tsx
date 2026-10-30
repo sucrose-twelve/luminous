@@ -51,7 +51,7 @@ export function ControlShell({
                   size={36}
                 />
                 <div className='flex flex-col items-start gap-0.5'>
-                  <span className='max-w-40 truncate text-sm font-medium'>
+                  <span className='max-w-40 truncate text-sm font-medium capitalize'>
                     {account.displayName}
                   </span>
                   <RoleBadge role={account.role} className='h-4 px-1.5 text-[10px]' />

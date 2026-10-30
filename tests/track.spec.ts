@@ -4,12 +4,12 @@ import path from "path"
 import { parseArgs } from "util"
 
 import { eq, sql } from "drizzle-orm"
-import { isEqual } from "es-toolkit"
+import { groupBy, isEqual } from "es-toolkit"
 import { z } from "zod"
 
 import { db, schema } from "@/drizzle"
-import { COLOR, logger } from "@/libs/logger"
 import { writeThumbnail } from "@/libs/ffmpeg"
+import { COLOR, logger } from "@/libs/logger"
 import { artTrack, primarySource, seasonArtDirectory } from "@/libs/media"
 
 import {
@@ -44,6 +44,10 @@ type ImportedEpisode = {
   episodeNo: number
   skips: Content.Skip[]
   spriteGrid: Content.SpriteGrid | null
+  /**
+   * The languages the episode had tracks in before this run, so the art step can tell when its art track is new.
+   */
+  previousLanguages: string[]
 }
 
 /**
@@ -161,7 +165,8 @@ async function readSourceTracks(scanned: SourceFiles[]) {
 /**
  * Upserts one episode per episode number and one track per file, in one transaction.
  *
- * @returns The season's imported episodes, with what the art step needs
+ * @returns The season's imported episodes, with what the art step needs (including the languages each had
+ * before the upsert)
  */
 async function importTracks(
   seasonId: string,
@@ -178,6 +183,13 @@ async function importTracks(
   )
 
   return db.transaction(async (tx) => {
+    const previousTracks = await tx
+      .select({ episodeNo: schema.episodes.episodeNo, language: schema.tracks.language })
+      .from(schema.tracks)
+      .innerJoin(schema.episodes, eq(schema.tracks.episodeId, schema.episodes.id))
+      .where(eq(schema.episodes.seasonId, seasonId))
+    const previousByEpisode = groupBy(previousTracks, (track) => track.episodeNo)
+
     const episodes = await tx
       .insert(schema.episodes)
       .values(
@@ -233,7 +245,12 @@ async function importTracks(
         }
       })
 
-    return episodes
+    return episodes.map((episode) => ({
+      ...episode,
+      previousLanguages: (previousByEpisode[episode.episodeNo] ?? []).map(
+        (track) => track.language
+      )
+    }))
   })
 }
 
@@ -243,8 +260,10 @@ async function importTracks(
  * language.
  *
  * An existing thumbnail is kept (it may be hand-picked) and an existing sprite whose grid matches the DB is
- * kept; `force` regenerates both. The DB is updated per episode, right after its files, so a crash midway
- * leaves it matching what's on disk.
+ * kept; `force` regenerates both. So does a new art track: an episode that already had tracks, but not in the
+ * art track's language, has art made from another track (a dub that landed after the original, or one that
+ * sorts first by language). The DB is updated per episode, right after its files, so a crash midway leaves it
+ * matching what's on disk.
  */
 async function generateArt(
   episodes: ImportedEpisode[],
@@ -263,14 +282,22 @@ async function generateArt(
     const thumbnail = toStoredPath(path.join(directory, `${stem}.webp`))
     const sprite = toStoredPath(path.join(directory, `${stem}-sprite-sheet.webp`))
     const grid = spriteGrid(track.duration)
+    const isNewArtTrack =
+      episode.previousLanguages.length > 0 &&
+      !episode.previousLanguages.includes(track.language)
+    const shouldRemake = force || isNewArtTrack
     const done: string[] = []
 
-    if (force || !fs.existsSync(thumbnail)) {
-      await writeThumbnail(track.path, thumbnailTime(track.duration, episode.skips), thumbnail)
+    if (shouldRemake || !fs.existsSync(thumbnail)) {
+      await writeThumbnail(
+        track.path,
+        thumbnailTime(track.duration, episode.skips),
+        thumbnail
+      )
       done.push("thumbnail")
     }
 
-    if (force || !fs.existsSync(sprite) || !isEqual(episode.spriteGrid, grid)) {
+    if (shouldRemake || !fs.existsSync(sprite) || !isEqual(episode.spriteGrid, grid)) {
       await writeSprite(track.path, grid, sprite)
       done.push(`sprite ${grid.count} tiles`)
     }
@@ -281,7 +308,7 @@ async function generateArt(
       .where(eq(schema.episodes.id, episode.id))
 
     logger(
-      `🖼️ E${stem} ${track.language} ${done.length > 0 ? done.join(", ") : "kept existing art"} ${COLOR.FG.Gray}${path.dirname(thumbnail)}`,
+      `🖼️ E${stem} ${track.language}${isNewArtTrack ? " (new art track)" : ""} ${done.length > 0 ? done.join(", ") : "kept existing art"}`,
       artStartedAt
     )
   }
@@ -358,7 +385,8 @@ async function loadSeason({
  *   `<CONTENTS_SOURCE_DIR>/Frieren/Thumbnails/1/`, `<CONTENTS_SOURCE_DIR>/SAO/Thumbnails/Ordinal Scale/`, or
  *   `<CONTENTS_SOURCE_DIR>/SAO/Thumbnails/Alternative Gun Gale Online/1/` for a spinoff), made from a dub's file
  *   (the original's when the episode has no dub):
- *   `01.webp` (640×360) and `01-sprite-sheet.webp` (192×108 tiles). `--force` regenerates existing art.
+ *   `01.webp` (640×360) and `01-sprite-sheet.webp` (192×108 tiles). `--force` regenerates existing art; an
+ *   episode whose dub landed after its art was made from the original gets new art without it.
  *
  * Safe to re-run: episodes upsert on `(seasonId, episodeNo)` and tracks on `(episodeId, language)`.
  */

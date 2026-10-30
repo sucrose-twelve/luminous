@@ -186,6 +186,11 @@ DB is updated per episode, right after its files.
   grid in the DB. A 24-minute episode gives 143 tiles, 1920×1620 px, about 50–65 KB.
 
 - An existing sprite is kept when the grid in the DB matches; `--force` regenerates it.
+- Both are remade, without `--force`, when the art track is new: before the upsert the
+  import reads each episode's track languages from the DB, and an episode that had tracks
+  but none in the art track's language has art from another track (its dub landed after
+  the original). That replaces a hand-picked thumbnail too. A dub missing from disk for
+  one run doesn't trigger it, since the original it falls back to is already in the DB.
 - 192×108 matches the design's ~200 px hover preview, shown 1:1 (scaling a smaller tile up
   blurs it). The player reads the tile size from `spriteGrid`, so changing it needs no
   player change: a re-run without `--force` regenerates every sprite whose stored grid

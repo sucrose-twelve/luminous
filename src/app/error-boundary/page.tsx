@@ -1,7 +1,11 @@
-import { Link } from "@/components/link"
+import NextLink from "next/link"
 
 import { searchValidator } from "./validator.nuqs"
 
+/**
+ * Where `ErrorBoundary` redirects (`401`, `403`, `423`). It sits under the root layout only, so it uses
+ * `next/link` rather than `@/components/link`: there is no `MainStoreProvider` here, which the top loader needs.
+ */
 export default async function ErrorBoundary({ searchParams }: NextSearchParams) {
   const { msg, ts } = searchValidator.parse(await searchParams)
 
@@ -12,7 +16,7 @@ export default async function ErrorBoundary({ searchParams }: NextSearchParams) 
           <h1 className='pb-4 text-9xl font-black'>Oops!</h1>
           <h3 className='text-3xl font-bold text-zinc-400'>Unexpected Error</h3>
           <p className='text-zinc-400'>
-            An error occurred and you request couldn't be completed.
+            An error occurred and your request couldn't be completed.
           </p>
         </div>
 
@@ -20,9 +24,9 @@ export default async function ErrorBoundary({ searchParams }: NextSearchParams) 
           {JSON.stringify({ msg, ts }, null, 2)}
         </pre>
 
-        <Link className='mx-auto mt-4 font-bold' href='/'>
+        <NextLink className='mx-auto mt-4 font-bold' href='/'>
           Go back home
-        </Link>
+        </NextLink>
       </div>
     </div>
   )

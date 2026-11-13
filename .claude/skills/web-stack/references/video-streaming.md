@@ -40,8 +40,9 @@ A typical layout:
 - Paths in `sources` are explicit, so any folder naming works (`Thai Dub/1` or
   `1/Thai Dub`). A series source is a folder; a `movie` source is the `.mp4`. At most one
   source is the original (`isDubbed: false`; a season may have only dubs), and each
-  language appears once. A dub other than the primary source may be listed before its
-  files exist: the import skips it.
+  language appears once. Any source may be listed before its files exist: saving the
+  season form creates missing folders, and the import handles sources with no files yet
+  (see the import step below).
 - In a folder, episode files are named **only** `01.mp4`, `14 - SP1.mp4` or
   `14 - OVA1.mp4`: the leading number is `episodes.episode_no`. `01.mp4` is a `regular`
   episode whose `episodes.title` is the name without `.mp4` (`01`); `14 - SP1.mp4` is a

@@ -12,7 +12,13 @@ import { contentColumns, seasonColumns } from "@/drizzle/table-columns"
 import { primarySource, seasonArtDirectory } from "@/libs/media"
 import { slugify } from "@/libs/utils"
 
-import { checkArtPath, checkSourceDir, checkSourcePath } from "./paths"
+import {
+  checkArtPath,
+  checkSourceDir,
+  checkSourcePath,
+  createFolder,
+  createSourceFolder
+} from "./paths"
 import { contentUpdateValidator, seasonValidator } from "./validator.zod"
 
 /**
@@ -27,9 +33,10 @@ const currentSeasonFields = pick(seasonColumns, ["id", "contentId", "sources"])
  * Saves the control panel's edit-content form. Staff only.
  *
  * The slug can't be edited: it follows the title (`slugify`), and a title without Latin letters keeps the old
- * slug instead of failing. Moving the source directory moves no files; seasons whose primary source isn't
- * inside the new folder still play, but `tests/track.spec.ts` can't import them again (`seasonArtDirectory`),
- * so the result carries a `warning` naming how many.
+ * slug instead of failing. A source directory that isn't on disk yet is created (`createFolder`). Moving the
+ * source directory moves no files; seasons whose primary source isn't inside the new folder still play, but
+ * `tests/track.spec.ts` can't import them again (`seasonArtDirectory`), so the result carries a `warning`
+ * naming how many.
  *
  * @param contentId - `contents.id`
  * @param input - The form values, validated with `contentUpdateValidator`
@@ -92,6 +99,11 @@ export const updateContent = withRole(
       }
     }
 
+    const folderError = await createFolder(values.sourceDir)
+    if (folderError) {
+      return { ok: false as const, errors: { sourceDir: [folderError] } }
+    }
+
     /**
      * `set` skips `undefined`, so an optional field the form cleared is written as `null` explicitly.
      */
@@ -125,8 +137,9 @@ export const updateContent = withRole(
 )
 
 /**
- * Saves the control panel's edit-season form with the same checks as `createSeason`: sources and poster on
- * disk, the primary source not already imported by another season, and the season number free. Staff only.
+ * Saves the control panel's edit-season form with the same checks as `createSeason`: source and poster paths,
+ * the primary source not already imported by another season, and the season number free. Source folders that
+ * aren't on disk yet are created (`createSourceFolder`). Staff only.
  *
  * A season can't move to another content. Removing a source keeps the tracks already imported from it (tracks
  * aren't tied to `sources`), so the result carries a `warning` naming the removed languages.
@@ -153,44 +166,39 @@ export const updateSeason = withRole(
       return { ok: false as const, errors: { sources: ["Add at least one source"] } }
     }
 
-    const [[current], [duplicate], [sameNumber], sourceErrors, posterError] =
-      await Promise.all([
-        db
-          .select(currentSeasonFields)
-          .from(schema.seasons)
-          .where(eq(schema.seasons.id, id.data))
-          .limit(1),
-        db
-          .select({ id: seasonColumns.id })
-          .from(schema.seasons)
-          .where(
-            and(
-              ne(schema.seasons.id, id.data),
-              sql`${schema.seasons.sources} @> ${JSON.stringify([{ pathname: primary.pathname }])}::jsonb`
-            )
+    const posterError = checkArtPath(values.poster)
+    const [[current], [duplicate], [sameNumber], sourceErrors] = await Promise.all([
+      db
+        .select(currentSeasonFields)
+        .from(schema.seasons)
+        .where(eq(schema.seasons.id, id.data))
+        .limit(1),
+      db
+        .select({ id: seasonColumns.id })
+        .from(schema.seasons)
+        .where(
+          and(
+            ne(schema.seasons.id, id.data),
+            sql`${schema.seasons.sources} @> ${JSON.stringify([{ pathname: primary.pathname }])}::jsonb`
           )
-          .limit(1),
-        values.kind === "season" && values.seasonNo !== undefined
-          ? db
-              .select({ id: seasonColumns.id })
-              .from(schema.seasons)
-              .where(
-                and(
-                  ne(schema.seasons.id, id.data),
-                  eq(schema.seasons.contentId, values.contentId),
-                  eq(schema.seasons.kind, "season"),
-                  eq(schema.seasons.seasonNo, values.seasonNo)
-                )
+        )
+        .limit(1),
+      values.kind === "season" && values.seasonNo !== undefined
+        ? db
+            .select({ id: seasonColumns.id })
+            .from(schema.seasons)
+            .where(
+              and(
+                ne(schema.seasons.id, id.data),
+                eq(schema.seasons.contentId, values.contentId),
+                eq(schema.seasons.kind, "season"),
+                eq(schema.seasons.seasonNo, values.seasonNo)
               )
-              .limit(1)
-          : [],
-        Promise.all(
-          values.sources.map((source) =>
-            checkSourcePath(source, values.kind, source === primary)
-          )
-        ),
-        checkArtPath(values.poster)
-      ])
+            )
+            .limit(1)
+        : [],
+      Promise.all(values.sources.map((source) => checkSourcePath(source, values.kind)))
+    ])
 
     if (!current) {
       return { ok: false as const, message: "Season not found" }
@@ -217,6 +225,15 @@ export const updateSeason = withRole(
         ok: false as const,
         message: `Another season was already imported from ${primary.pathname}`
       }
+    }
+
+    const folderErrors = (
+      await Promise.all(
+        values.sources.map((source) => createSourceFolder(source, values.kind))
+      )
+    ).filter((error) => error !== null)
+    if (folderErrors.length > 0) {
+      return { ok: false as const, errors: { sources: folderErrors } }
     }
 
     /**

@@ -96,8 +96,9 @@
 
 ### 3.3 Source directory
 
-- ตรวจว่าเป็นโฟลเดอร์ที่มีจริง (`pathType(...) === "directory"`) ทั้งตอนสร้างและแก้ —
-  `createContent` ตอนนี้**ยังไม่ตรวจ** ให้เพิ่ม
+- ต้องเป็น path เต็มที่ไม่ใช่ไฟล์ ทั้งตอนสร้างและแก้ ถ้ายังไม่มีโฟลเดอร์ก็สร้างให้
+  (`createFolder`, รวมโฟลเดอร์แม่) หลังผ่านการตรวจอื่นทั้งหมด · `createContent` สร้างหลัง
+  insert เพื่อไม่ให้ slug ซ้ำทิ้งโฟลเดอร์ว่างไว้ ถ้าสร้างไม่ได้จะลบแถวที่เพิ่ง insert ออก
 - แก้ใน Edit ได้ (C2) แต่ไม่ย้ายไฟล์: season เดิมเก็บ path เต็มไว้แล้วจึงยังเล่นได้ แต่
   `seasonArtDirectory` ต้องการให้ primary source อยู่ใต้ `sourceDir`
   ถ้าไม่อยู่ใต้โฟลเดอร์ใหม่ `track.spec.ts` จะ import season นั้นไม่ได้อีก →
@@ -123,15 +124,17 @@
 | Title       | input                                                                                                         | optional ≤ 255 (ว่าง → ชื่อจาก `seasonName`)                 |
 | Status      | select `STATUS_LABELS`                                                                                        | ค่าเริ่มต้น `finished`                                       |
 | Released on | date                                                                                                          | required                                                     |
-| Poster      | path                                                                                                          | ไฟล์รูป (`IMAGE_EXTENSIONS`) ที่มีจริง                       |
+| Poster      | path                                                                                                          | path เต็ม + นามสกุล `IMAGE_EXTENSIONS` (ไม่ตรวจว่ามีไฟล์)    |
 | Synopsis    | textarea                                                                                                      | ≤ 10,000                                                     |
 | Sources     | รายการแถว: Language (select ด้วย `languageName`) · Path · Dubbed (checkbox) · ปุ่มลบแถว · ปุ่ม **Add source** | ≥ 1 แถว · original (`isDubbed: false`) ได้แค่ 1 · ภาษาไม่ซ้ำ |
 
 - placeholder ของ Path ตาม kind: movie → "Full path to the `.mp4` file", อื่น ๆ → "Folder
   of `01.mp4`, `02.mp4`, …"
 - แถวใหม่เติม `{sourceDir}/` ให้ก่อน (**เพิ่ม**: ลดการพิมพ์ path ยาว)
-- ข้อความช่วย: "Only the primary source (the original, or the first dub) has to exist now.
-  Other dubs can be added before their files are ready."
+- ข้อความช่วย: "Missing folders are created on save, so files can be copied in later." ·
+  โฟลเดอร์ของทุก source ที่ยังไม่มีจะถูกสร้าง (`createSourceFolder`; movie
+  สร้างโฟลเดอร์ที่ `.mp4` จะอยู่) · path ที่มีอยู่แล้วต้องเป็นชนิดที่ถูก (series =
+  โฟลเดอร์, movie = ไฟล์)
 - สำเร็จ → ไป `/ctrl/seasons/[newId]` ที่มีปุ่ม Import command (season-page §2.3)
 
 ### 4.1 ลบ content (`root` เท่านั้น)

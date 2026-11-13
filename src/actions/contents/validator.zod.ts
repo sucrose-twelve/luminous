@@ -48,7 +48,8 @@ export const contentUpdateValidator = contentValidator.omit({ slug: true })
 export type ContentUpdateValidator = z.infer<typeof contentUpdateValidator>
 
 /**
- * One audio version of a season. Whether `pathname` exists is checked in `createSeason`.
+ * One audio version of a season. `createSeason` checks what's already at `pathname` and creates its folder when
+ * it isn't on disk yet.
  */
 const sourceValidator = z.object({
   language: z.enum(Locales),
@@ -58,9 +59,8 @@ const sourceValidator = z.object({
 
 /**
  * Import-season form. At most one source is the original audio (`isDubbed: false`); a season may have only
- * dubs. Its primary source (the original, or the first dub without one) must exist and `poster` must be an
- * existing image (checked in `createSeason`). `seasonNo` follows `kind` the way the `seasons_season_no_check`
- * constraint does.
+ * dubs. Nothing has to be on disk yet: `createSeason` creates missing source folders and checks only the
+ * `poster` path and extension. `seasonNo` follows `kind` the way the `seasons_season_no_check` constraint does.
  */
 export const seasonValidator = z
   .object({

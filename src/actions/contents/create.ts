@@ -11,14 +11,23 @@ import { contentColumns, seasonColumns } from "@/drizzle/table-columns"
 import { primarySource } from "@/libs/media"
 import { slugify } from "@/libs/utils"
 
-import { checkArtPath, checkSourceDir, checkSourcePath } from "./paths"
+import {
+  checkArtPath,
+  checkSourceDir,
+  checkSourcePath,
+  createFolder,
+  createSourceFolder
+} from "./paths"
 import { contentValidator, seasonValidator } from "./validator.zod"
 
 /**
  * Creates a content from the control panel's content form. Staff only.
  *
- * Expected failures are returned, not thrown: field errors from Zod or the source directory check
- * (`checkSourceDir`), or a `message` when the slug is already taken.
+ * The source directory is created when it isn't on disk yet, after the insert, so a taken slug leaves no empty
+ * folder; if it can't be created, the new row is deleted again.
+ *
+ * Expected failures are returned, not thrown: field errors from Zod, the source directory check
+ * (`checkSourceDir`), or `createFolder`, or a `message` when the slug is already taken.
  */
 export const createContent = withRole(STAFF_ROLES, async (_account, input: unknown) => {
   const parsed = contentValidator.safeParse(input)
@@ -50,13 +59,22 @@ export const createContent = withRole(STAFF_ROLES, async (_account, input: unkno
     return { ok: false as const, message: `A content with slug "${slug}" already exists` }
   }
 
+  const folderError = await createFolder(values.sourceDir)
+  if (folderError) {
+    await db.delete(schema.contents).where(eq(schema.contents.id, content.id))
+    return { ok: false as const, errors: { sourceDir: [folderError] } }
+  }
+
   updateTag("contents/list")
   return { ok: true as const, content }
 })
 
 /**
  * Creates a season from the control panel's season form after checking its sources (see `checkSourcePath`)
- * and that `poster` is an existing image, which may sit in any folder. Staff only.
+ * and that `poster` is an image path, which may sit in any folder and needn't be on disk yet. Staff only.
+ *
+ * Source folders that aren't on disk yet are created after the insert (`createSourceFolder`), like
+ * `createContent`'s source directory.
  *
  * Expected failures are returned, not thrown, like `createContent`: also a `message` when another season was
  * already imported from the same primary source, or has the same season number.
@@ -76,7 +94,8 @@ export const createSeason = withRole(STAFF_ROLES, async (_account, input: unknow
     return { ok: false as const, errors: { sources: ["Add at least one source"] } }
   }
 
-  const [[content], [duplicate], sourceErrors, posterError] = await Promise.all([
+  const posterError = checkArtPath(poster)
+  const [[content], [duplicate], sourceErrors] = await Promise.all([
     db
       .select({ id: contentColumns.id })
       .from(schema.contents)
@@ -89,10 +108,7 @@ export const createSeason = withRole(STAFF_ROLES, async (_account, input: unknow
         sql`${schema.seasons.sources} @> ${JSON.stringify([{ pathname: primary.pathname }])}::jsonb`
       )
       .limit(1),
-    Promise.all(
-      sources.map((source) => checkSourcePath(source, kind, source === primary))
-    ),
-    checkArtPath(poster)
+    Promise.all(sources.map((source) => checkSourcePath(source, kind)))
   ])
 
   if (!content) {
@@ -132,6 +148,14 @@ export const createSeason = withRole(STAFF_ROLES, async (_account, input: unknow
       ok: false as const,
       message: `Season ${parsed.data.seasonNo} already exists for this content`
     }
+  }
+
+  const folderErrors = (
+    await Promise.all(sources.map((source) => createSourceFolder(source, kind)))
+  ).filter((error) => error !== null)
+  if (folderErrors.length > 0) {
+    await db.delete(schema.seasons).where(eq(schema.seasons.id, season.id))
+    return { ok: false as const, errors: { sources: folderErrors } }
   }
 
   updateTag("seasons/list")

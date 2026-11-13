@@ -126,7 +126,7 @@ bun tests/track.spec.ts --season <seasonId> [--remux] [--force]
 | Kind / Season no.               | โฟลเดอร์ภาพ (`seasonArtDirectory`) เปลี่ยน: ภาพเดิมยังใช้ได้ (DB เก็บ path เต็ม) แต่ import ครั้งหน้าเขียนลงโฟลเดอร์ใหม่ · ต้องผ่าน unique (content, seasonNo) + `seasons_season_no_check` |
 | เพิ่ม source (dub ใหม่)         | กรณีปกติ: บันทึกแล้วรัน Import command                                                                                                                                                     |
 | ลบ source                       | track ภาษานั้นที่ import แล้ว**ยังอยู่**และเล่นได้ (track ไม่ผูกกับ sources) → เตือน                                                                                                       |
-| เปลี่ยน path ของ primary source | ตรวจซ้ำกับ season อื่นแบบ `createSeason` (ยกเว้นตัวเอง) และต้องมีอยู่จริง                                                                                                                  |
+| เปลี่ยน path ของ primary source | ตรวจซ้ำกับ season อื่นแบบ `createSeason` (ยกเว้นตัวเอง) · โฟลเดอร์ที่ยังไม่มีจะถูกสร้าง                                                                                                    |
 | Poster                          | ต้องทำ version ใน URL รูป (main §8.3) ไม่งั้นเห็นรูปเก่า                                                                                                                                   |
 
 ## 3. `/ctrl/seasons/[seasonId]/episodes/[episodeId]`

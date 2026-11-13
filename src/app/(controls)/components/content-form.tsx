@@ -281,8 +281,8 @@ function ContentForm({
             <SourceDirNotice control={form.control} sourceDir={content.sourceDir} />
           ) : (
             <FieldDescription className='text-xs'>
-              The content&apos;s folder; season art goes in its <code>Thumbnails</code>{" "}
-              folder.
+              The content&apos;s folder, created on save if it isn&apos;t there yet;
+              season art goes in its <code>Thumbnails</code> folder.
             </FieldDescription>
           )}
           <FieldError className='text-xs'>{errors.sourceDir?.message}</FieldError>

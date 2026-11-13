@@ -251,8 +251,9 @@ src/app/(controls)/
   `message` ใน modal ไม่ใช่ toast (Q6: เพิ่ม `sonner`)
 - ฟอร์มแก้ไข: ค่าเริ่มต้นคือข้อมูลปัจจุบัน ปุ่ม **Save** disabled จนกว่าจะมีการแก้
   (`formState.isDirty`)
-- ช่อง path ทุกช่องใช้ `mediaPath` (รับ "Copy as path" ของ Windows ได้) และตรวจบน disk
-  ฝั่ง server แบบ `createSeason`
+- ช่อง path ทุกช่องใช้ `mediaPath` (รับ "Copy as path" ของ Windows ได้) และตรวจฝั่ง server
+  แบบ `createSeason`: โฟลเดอร์ (`sourceDir`, sources) ที่ยังไม่มีจะถูกสร้างตอนบันทึก ·
+  poster ตรวจแค่ path เต็มกับนามสกุล ไม่ตรวจว่ามีไฟล์
 - ลบ content ได้เฉพาะ `root` (hard delete: DB + `sourceDir` บน disk, content-page §4.1) ·
   season / episode ยังลบไม่ได้ (Q7)
 

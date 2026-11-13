@@ -73,7 +73,8 @@ const LANGUAGE_ITEMS = Object.values(Locales).map((language) => ({
 /**
  * The New / Edit season modal. With `season` it edits that season; without, it creates one in `content` and
  * opens its page, where the import command is. The form validates with the action's own `seasonValidator`;
- * the action then checks the poster and sources on disk, and those errors land under their fields.
+ * the action then checks the poster and source paths and creates missing source folders, and those errors land
+ * under their fields.
  */
 export function SeasonFormModal({
   control,
@@ -300,7 +301,7 @@ function SeasonForm({
             {kind === "movie"
               ? "Each audio version's .mp4 file."
               : "Each audio version's folder of 01.mp4, 02.mp4, …"}{" "}
-            Only the primary source (the original, or the first dub) has to exist now.
+            Missing folders are created on save, so files can be copied in later.
           </FieldDescription>
 
           {sources.fields.map((source, index) => (

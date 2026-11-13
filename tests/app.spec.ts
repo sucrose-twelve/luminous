@@ -24,6 +24,50 @@ import seasons from "../docs/seasons.json"
 async function main() {
   const startedAt = new Date()
 
+  const results = await db.query.contents.findMany({
+    columns: {
+      id: false,
+      createdAt: false,
+      updatedAt: false
+    },
+    orderBy: { title: "asc" },
+    with: {
+      seasons: {
+        columns: {
+          id: false,
+          contentId: false,
+          createdAt: false,
+          updatedAt: false
+        },
+        orderBy: { releasedOn: "asc" },
+        with: {
+          episodes: {
+            columns: {
+              id: false,
+              seasonId: false,
+              createdAt: false,
+              updatedAt: false
+            },
+            orderBy: { episodeNo: "asc" },
+            with: {
+              tracks: {
+                columns: {
+                  id: false,
+                  episodeId: false,
+                  createdAt: false,
+                  updatedAt: false
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  })
+
+  // const output = path.resolve(`docs/${Date.now()}-bak.json`)
+  // await fs.promises.writeFile(output, JSON.stringify(results), { encoding: "utf-8" })
+
   logger("🎉 Done.", startedAt)
   process.exit(0)
 }

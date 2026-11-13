@@ -74,7 +74,7 @@ export function SeasonTable({
                     width={40}
                     height={60}
                   />
-                  <div className='flex min-w-0 flex-col gap-1'>
+                  <div className='flex max-w-sm min-w-0 flex-col gap-1'>
                     <Link
                       href={`/ctrl/seasons/${season.id}`}
                       className='truncate font-medium hover:underline'>

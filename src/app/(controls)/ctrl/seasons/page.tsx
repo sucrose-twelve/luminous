@@ -1,7 +1,12 @@
 import type { Metadata } from "next"
 
+import { readSessionAccount } from "@/actions/auth"
+import { readImportJob, readOngoingCounts } from "@/actions/imports/read"
 import { readSeasonRows } from "@/app/(controls)/actions/read"
 import { ControlPage, TableCard } from "@/app/(controls)/components/control-page"
+import { ImportJobProvider } from "@/app/(controls)/components/import-job"
+import { ImportButton } from "@/app/(controls)/components/import-modal"
+import { ImportStatusCard } from "@/app/(controls)/components/import-status-card"
 import { SeasonTable } from "@/app/(controls)/components/season-table"
 import { TablePager } from "@/app/(controls)/components/table-pager"
 
@@ -19,22 +24,27 @@ export const metadata: Metadata = { title: "Seasons" }
 
 /**
  * Every season across the catalogue, adult kinds included, filtered from the side panel. The header's search
- * lands here (`?search=`). New seasons are made from their content's page.
+ * lands here (`?search=`). New seasons are made from their content's page. Root also gets Import ongoing, with
+ * the import's status card above the table.
  */
 export default async function Seasons({ searchParams }: NextSearchParams) {
   const query = queryValidator.parse(await searchParams)
-  const { data, ...page } = await readSeasonRows(
-    {
-      kinds: query.kind,
-      sources: query.source,
-      genres: query.genres,
-      statuses: query.status,
-      audios: query.audio,
-      seasonals: query.seasonal,
-      search: query.search
-    },
-    query
-  )
+  const [{ data, ...page }, viewer] = await Promise.all([
+    readSeasonRows(
+      {
+        kinds: query.kind,
+        sources: query.source,
+        genres: query.genres,
+        statuses: query.status,
+        audios: query.audio,
+        seasonals: query.seasonal,
+        search: query.search
+      },
+      query
+    ),
+    readSessionAccount()
+  ])
+  const canImport = viewer?.role === "root"
   const isFiltered =
     !!query.search ||
     [
@@ -46,12 +56,24 @@ export default async function Seasons({ searchParams }: NextSearchParams) {
       query.seasonal
     ].some((values) => values.length > 0)
 
-  return (
+  const [job, counts] = canImport
+    ? await Promise.all([readImportJob(), readOngoingCounts()])
+    : [null, []]
+
+  const view = (
     <ControlPage
       title={query.search ? `Results for “${query.search}”` : "Seasons"}
       description='Every season across the catalogue. New seasons are added from their content.'
-      actions={query.search ? <ClearSearchButton /> : null}
+      actions={
+        <>
+          {query.search ? <ClearSearchButton /> : null}
+          {canImport ? (
+            <ImportButton target={{ type: "ongoing", counts }} label='Import ongoing' />
+          ) : null}
+        </>
+      }
       aside={<SeasonFilters />}>
+      {canImport ? <ImportStatusCard /> : null}
       <TableCard footer={<TablePager page={page} />}>
         <SeasonTable
           rows={data}
@@ -65,4 +87,6 @@ export default async function Seasons({ searchParams }: NextSearchParams) {
       </TableCard>
     </ControlPage>
   )
+
+  return canImport ? <ImportJobProvider initial={job}>{view}</ImportJobProvider> : view
 }

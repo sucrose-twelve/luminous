@@ -25,8 +25,13 @@ bun tests/track.spec.ts --season 019a2b3c-… --remux --force
 | `--kind` | `contents.kind` | ชนิด content ของซีซันที่จะนำเข้าเมื่อไม่ใส่ `--season` (ค่าเริ่มต้น `anime_series`) ใส่คู่กับ `--season` จะไม่มีผล |
 | `--remux` | | แปลงไฟล์ที่ยังไม่ใช่ fragmented MP4 ให้เป็น fragmented MP4 (stream copy เร็วมาก), เข้ารหัสเสียงที่ไม่ใช่ AAC/Opus เป็น AAC และเปลี่ยน tag ของ HEVC เป็น `hvc1` ถ้าไม่ใส่ ไฟล์ต้องเป็น fragmented MP4 อยู่แล้ว |
 | `--force` | | สร้าง thumbnail และ sprite sheet ใหม่แม้มีไฟล์อยู่แล้ว |
+| `--cancel-file` | path | ใช้โดยปุ่ม Import ของ control panel: เมื่อไฟล์นี้ถูกสร้าง สคริปต์จะหยุดที่จุดปลอดภัยถัดไป (ระหว่างซีซัน, ไฟล์ที่รีมักซ์, ก่อนเขียน DB, ระหว่างภาพของแต่ละตอน) |
 
 รันซ้ำได้อย่างปลอดภัย: `episodes` upsert ตาม `(seasonId, episodeNo)` และ `tracks` upsert ตาม `(episodeId, language)`
+
+รันจาก control panel ได้ด้วย (เฉพาะ `root`): ปุ่ม **Import tracks** ในหน้า season และ **Import ongoing** ในหน้า `/ctrl/seasons`
+รันสคริปต์นี้บน server พร้อม `--cancel-file` แล้วแสดง log สดในการ์ดสถานะ exit code บอกผล: `0` สำเร็จ, `1` ล้มเหลว, `2` ยกเลิก
+(`IMPORT_EXIT_CODES` ใน `@/constants`) ส่วน status ของซีซันที่นำเข้าเมื่อไม่ใส่ `--season` คือ `ONGOING_STATUSES` ใน `@/constants`
 
 ## แหล่งไฟล์ (`seasons.sources`)
 
@@ -111,7 +116,7 @@ bun tests/track.spec.ts --season 019a2b3c-… --remux --force
 |---|---|
 | `tests/track.spec.ts` | Entry: อ่าน argument, โหลดซีซัน และสั่งแต่ละขั้นตอนตามลำดับ |
 | `tracks/validator.zod.ts` | Zod schema ของ argument (`argsValidator`) |
-| `tracks/constants.ts` | ค่าที่ปรับได้: status ของซีซันที่นำเข้าเมื่อไม่ใส่ `--season`, รูปแบบชื่อไฟล์, codec ที่ copy ได้, ขนาดภาพ, ช่วงของ sprite, ค่าเผื่อความยาวตอนรีมักซ์ |
+| `tracks/constants.ts` | ค่าที่ปรับได้: รูปแบบชื่อไฟล์, codec ที่ copy ได้, ขนาดภาพ, ช่วงของ sprite, ค่าเผื่อความยาวตอนรีมักซ์ |
 | `tracks/source.ts` | หาไฟล์ตอนของ source แต่ละอัน (`findSourceFiles`) |
 | `tracks/ffprobe.ts` | อ่านความยาวและ stream ของไฟล์ |
 | `tracks/ffmpeg.ts` | เช็กเครื่องมือ, วางแผนและรันการรีมักซ์, ลบไฟล์สำรอง (เขียน WebP อยู่ `src/libs/ffmpeg.ts` ใช้ร่วมกับ control panel) |

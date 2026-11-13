@@ -7,12 +7,12 @@ import { and, asc, eq, inArray, sql } from "drizzle-orm"
 import { groupBy, isEqual } from "es-toolkit"
 import { z } from "zod"
 
+import { IMPORT_EXIT_CODES, ONGOING_STATUSES } from "@/constants"
 import { db, schema } from "@/drizzle"
 import { writeThumbnail } from "@/libs/ffmpeg"
 import { COLOR, logger } from "@/libs/logger"
 import { artTrack, primarySource, seasonArtDirectory } from "@/libs/media"
 
-import { ONGOING_STATUSES } from "./tracks/constants"
 import {
   missingTools,
   planRemux,
@@ -37,6 +37,8 @@ type Season = {
 
 type SeasonRow = Awaited<ReturnType<typeof findSeasons>>[number]
 
+type CancelCheck = () => void
+
 type SourceFiles = Content.SeasonSource & { files: EpisodeFile[] }
 
 type TrackFile = EpisodeFile &
@@ -59,6 +61,24 @@ type ImportedEpisode = {
  * only skips it, since an upcoming season often has no files.
  */
 class NotOnDiskError extends Error {}
+
+/**
+ * The control panel asked the run to stop (`--cancel-file`). Thrown only at a safe point, between files, so
+ * nothing is left half-written.
+ */
+class CancelledError extends Error {}
+
+/**
+ * Makes the check that throws `CancelledError` once the cancel file exists. It runs between seasons, remuxed
+ * files, the DB write, and each episode's art; a run without `--cancel-file` never stops.
+ */
+function cancelCheck(cancelFile: string | undefined): CancelCheck {
+  return () => {
+    if (cancelFile && fs.existsSync(cancelFile)) {
+      throw new CancelledError("Cancelled from the control panel")
+    }
+  }
+}
 
 /**
  * Logs every problem, then stops the season's import through the catch in `main`.
@@ -113,7 +133,7 @@ async function scanSources(season: Season) {
  * Checks every file before remuxing any, so a file that needs a video re-encode stops the season while the library
  * is still untouched. Then remuxes the files that need it, one at a time.
  */
-async function remuxSources(scanned: SourceFiles[]) {
+async function remuxSources(scanned: SourceFiles[], throwIfCancelled: CancelCheck) {
   const plans: RemuxPlan[] = []
   const problems: string[] = []
 
@@ -130,6 +150,7 @@ async function remuxSources(scanned: SourceFiles[]) {
     stop(problems, `${problems.length} file(s) can't be remuxed; nothing was changed`)
 
   for (const [index, plan] of plans.entries()) {
+    throwIfCancelled()
     const remuxStartedAt = new Date()
     await remuxFile(plan)
     logger(
@@ -279,11 +300,13 @@ async function generateArt(
   episodes: ImportedEpisode[],
   tracks: TrackFile[],
   directory: string,
-  force: boolean
+  force: boolean,
+  throwIfCancelled: CancelCheck
 ) {
   await fs.promises.mkdir(directory, { recursive: true })
 
   for (const episode of episodes) {
+    throwIfCancelled()
     const artStartedAt = new Date()
     const track = artTrack(tracks.filter((item) => item.episodeNo === episode.episodeNo))
     if (!track) continue
@@ -368,9 +391,10 @@ function seasonName(row: SeasonRow) {
  * art. Deletes the season's remux backups last, so a failure in any step leaves every original in `.original/`
  * to recover from.
  */
-async function importSeason(row: SeasonRow, { remux, force }: ArgsValidator) {
+async function importSeason(row: SeasonRow, { remux, force, cancelFile }: ArgsValidator) {
   const startedAt = new Date()
   const name = seasonName(row)
+  const throwIfCancelled = cancelCheck(cancelFile)
 
   const artDirectory = seasonArtDirectory(row.sourceDir, row)
   if (!artDirectory)
@@ -387,15 +411,16 @@ async function importSeason(row: SeasonRow, { remux, force }: ArgsValidator) {
   }
 
   const scanned = await scanSources(season)
-  if (remux) await remuxSources(scanned)
+  if (remux) await remuxSources(scanned, throwIfCancelled)
 
   const tracks = await readSourceTracks(scanned)
+  throwIfCancelled()
   const episodes = await importTracks(season.id, tracks)
   logger(
     `📥 Imported ${episodes.length} episodes and ${tracks.length} tracks for ${name}`
   )
 
-  await generateArt(episodes, tracks, season.artDirectory, force)
+  await generateArt(episodes, tracks, season.artDirectory, force, throwIfCancelled)
 
   /**
    * Covers the whole season, so backups left by an earlier run that stopped midway go too, now that their files
@@ -450,6 +475,9 @@ async function importSeason(row: SeasonRow, { remux, force }: ArgsValidator) {
  *   (the original's when the episode has no dub):
  *   `01.webp` (640×360) and `01-sprite-sheet.webp` (192×108 tiles). `--force` regenerates existing art; an
  *   episode whose dub landed after its art was made from the original gets new art without it.
+ * - `--cancel-file <path>` is how the control panel's Import runs it: once that file exists, the run stops at
+ *   its next safe point (between seasons, remuxed files, and episodes' art) and exits with
+ *   `IMPORT_EXIT_CODES.cancelled`. A failed run exits with `IMPORT_EXIT_CODES.failed`.
  *
  * Safe to re-run: episodes upsert on `(seasonId, episodeNo)` and tracks on `(episodeId, language)`.
  */
@@ -458,18 +486,20 @@ async function main() {
 
   const { values } = parseArgs({
     options: {
-      season: { type: "string" },
-      kind: { type: "string" },
-      remux: { type: "boolean" },
-      force: { type: "boolean" }
+      "season": { type: "string" },
+      "kind": { type: "string" },
+      "remux": { type: "boolean" },
+      "force": { type: "boolean" },
+      "cancel-file": { type: "string" }
     }
   })
 
-  const parsed = argsValidator.safeParse(values)
+  const parsed = argsValidator.safeParse({ ...values, cancelFile: values["cancel-file"] })
   if (!parsed.success) {
     logger(
       `❌ Invalid arguments: ${JSON.stringify(z.flattenError(parsed.error).fieldErrors)}`
     )
+    process.exitCode = IMPORT_EXIT_CODES.failed
     return
   }
 
@@ -486,16 +516,25 @@ async function main() {
     return
   }
 
+  logger(`📋 ${rows.length} season(s) to import`)
+
+  const throwIfCancelled = cancelCheck(parsed.data.cancelFile)
   let imported = 0
+  let isCancelled = false
   const skipped: string[] = []
   const failed: string[] = []
 
   for (const row of rows) {
     try {
+      throwIfCancelled()
       await importSeason(row, parsed.data)
       imported++
     } catch (error) {
-      if (error instanceof NotOnDiskError && !parsed.data.season) {
+      if (error instanceof CancelledError) {
+        isCancelled = true
+        logger(`🛑 ${error.message} during ${seasonName(row)}`)
+        break
+      } else if (error instanceof NotOnDiskError && !parsed.data.season) {
         skipped.push(seasonName(row))
         logger(`⏭️ Skipped ${seasonName(row)}: ${error.message}`)
       } else {
@@ -506,15 +545,23 @@ async function main() {
   }
 
   logger(
-    `🎉 Imported ${imported}/${rows.length} season(s)${skipped.length > 0 ? `, skipped ${skipped.length} with no files` : ""}${failed.length > 0 ? `, failed: ${failed.join(", ")}` : ""}`,
+    `${isCancelled ? "🛑" : "🎉"} Imported ${imported}/${rows.length} season(s)${skipped.length > 0 ? `, skipped ${skipped.length} with no files` : ""}${failed.length > 0 ? `, failed: ${failed.join(", ")}` : ""}${isCancelled ? ", then cancelled" : ""}`,
     startedAt
   )
-  if (imported > 0)
+  if (isCancelled) process.exitCode = IMPORT_EXIT_CODES.cancelled
+  else if (failed.length > 0) process.exitCode = IMPORT_EXIT_CODES.failed
+  /**
+   * The control panel (`--cancel-file`) refreshes the site cache itself once the run ends.
+   */
+  if (imported > 0 && !parsed.data.cancelFile)
     logger(
       '⚠️ A running server serves cached art paths until `cacheLife("hours")` expires or it restarts'
     )
 }
 
 main()
-  .catch((error) => logger(`❌ ${errorMessage(error)}`))
+  .catch((error) => {
+    logger(`❌ ${errorMessage(error)}`)
+    process.exitCode = IMPORT_EXIT_CODES.failed
+  })
   .finally(() => db.$client.end())

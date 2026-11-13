@@ -26,6 +26,9 @@
 - **Title** `Seasons` · **Description** "Every season across the catalogue." · มี
   `?search` → title `Results for “{search}”` + ปุ่มล้างคำค้น
 - ไม่มีปุ่มสร้าง (สร้าง season ได้จากหน้า content เพราะต้องรู้ content)
+- **Import ongoing** (`root` เท่านั้น): modal เลือก content kind (แสดงจำนวน season ที่
+  `upcoming` / `airing` ต่อ kind จาก `readOngoingCounts`) + flag เหมือน §2.3 → รัน
+  `bun tests/track.spec.ts --kind <kind>` · การ์ดสถานะ (§2.3) อยู่เหนือตาราง
 - เรียงเริ่มต้น `releasedOn desc` · ขณะค้นหา → relevance (ตาม browse)
   จนกว่าจะคลิกหัวคอลัมน์
 
@@ -66,7 +69,8 @@
 | Sources                       | ต่อแถว: `languageName` + chip Original/Dub + path (copy) + **เพิ่ม**: สถานะบน disk (`Found` / `Not found` จาก `pathType`) และจำนวน track ที่ import แล้วของภาษานั้น (`12 / 12 episodes`) |
 | Created · Updated (**เพิ่ม**) |                                                                                                                                                                                          |
 
-ปุ่ม: **Edit season** (§2.5) · **Import command** (§2.3) · **Refresh site cache** (§2.4)
+ปุ่ม: **Edit season** (§2.5) · **Import tracks** (§2.3, `root`) · **Refresh site cache**
+(§2.4)
 
 ### 2.2 ตาราง episodes
 
@@ -84,32 +88,47 @@
 | Skips    | **เพิ่ม**: ตัวย่อของ skip ที่ตั้งแล้ว (`I` `O` `R`) หรือ `—`                                             | —    |
 | Aired    | `airedOn` หรือ `—`                                                                                       | ✓    |
 
-### 2.3 Import command (ตอบคำถาม "copy คำสั่ง หรือ tasks/queues")
+### 2.3 Import tracks (`root` เท่านั้น)
 
-**v1 = copy คำสั่ง** แต่ไม่ใส่ flag ไว้ให้ลบเอง ปุ่มเปิด popover:
+ปุ่ม **Import tracks** (เห็นเฉพาะ `root`) เปิด `ImportModal` → `startImport` รัน
+`bun tests/track.spec.ts --season <seasonId> [--remux] [--force]` เป็น child process ของ
+server (`@/actions/imports/runner.ts`) ไม่ต้องเปิด terminal
 
-```
-bun tests/track.spec.ts --season <seasonId> [--remux] [--force]
-```
+| Flag      | checkbox (ค่าเริ่มต้นไม่ติ๊ก) + คำอธิบาย (`IMPORT_FLAGS`)                                 |
+| --------- | ----------------------------------------------------------------------------------------- |
+| `--remux` | "Rewrite source files as fragmented MP4. Only needed for files that aren't yet."          |
+| `--force` | "Regenerate every thumbnail and sprite sheet. Replaces thumbnails picked by hand (§3.4)." |
 
-| Flag      | checkbox (ค่าเริ่มต้นไม่ติ๊ก) + คำอธิบายใน popover                                           |
-| --------- | -------------------------------------------------------------------------------------------- |
-| `--remux` | "Rewrite source files as fragmented MP4. Only needed for files that aren't yet."             |
-| `--force` | "Regenerate every thumbnail and sprite sheet. ⚠️ Replaces thumbnails picked by hand (§3.4)." |
+- รันได้ทีละงานทั้งระบบ · งานใหม่ถูกปฏิเสธระหว่างที่อีกงานยังรัน (ปุ่ม Start disabled)
+- modal ยังมีคำสั่งพร้อมปุ่ม Copy ไว้รันใน terminal เอง
+- ทำไมไม่ใส่ `--remux --force` ไว้เสมอ: `--remux` แตะไฟล์ต้นฉบับโดยไม่จำเป็น และ `--force`
+  เขียนทับ thumbnail ที่เลือกเองทั้ง season
+- ทำไมเป็นของ `root`: ทั้งสอง flag เปลี่ยนไฟล์บน disk (main Q3)
 
-- preview คำสั่งเปลี่ยนตาม checkbox + ปุ่ม **Copy** (Clipboard API ใช้ได้เพราะเป็น HTTPS
-  ทั้ง dev และ prod) + บรรทัดเตือน "After the run, press Refresh site cache."
-- ทำไมไม่ใส่ `--remux --force` ไว้เสมอแบบร่างแรก: ลืมลบครั้งเดียว `--remux`
-  ไปแตะไฟล์ต้นฉบับ โดยไม่จำเป็น และ `--force` เขียนทับ thumbnail ที่เลือกเองทั้ง season
-  (script เก็บ thumbnail เดิมไว้โดยตั้งใจ "it may be hand-picked")
-- ระบบ tasks/queues: **ยกเลิก** (main Q8) copy คำสั่งอย่างเดียว
+**การ์ดสถานะ** (`ImportStatusCard`, เหนือตาราง episodes และตาราง `/ctrl/seasons`)
+
+- แสดงงานล่าสุดของทั้งระบบ (ไม่ใช่เฉพาะ season นี้): ชื่อ (link → season) · chip สถานะ
+  Running / Cancelling / Done / Failed / Cancelled · flag · คนสั่ง · เวลาเริ่ม ·
+  เวลาที่ใช้
+- log สดผ่าน SSE (`GET /api/imports`, root เท่านั้น) เก็บ 1,000 บรรทัดล่าสุด เลื่อนตาม
+  บรรทัดใหม่เมื่ออยู่ล่างสุด · ย่อ/ขยายได้
+- **Cancel**: สร้าง cancel file (`--cancel-file`) → script หยุดที่จุดปลอดภัยถัดไป (ระหว่าง
+  season, ไฟล์ที่ remux, ก่อนเขียน DB, ระหว่างภาพของแต่ละตอน) จึงไม่มีไฟล์ remux ค้าง
+  ครึ่งทาง · **Dismiss**: ซ่อนงานที่จบแล้ว
+- จบงาน (สำเร็จ ล้มเหลว หรือยกเลิก) → `refreshImportCache` ล้าง cache ของทุก season
+  ที่งานแตะ แล้ว toast
+- สถานะอยู่ในหน่วยความจำของ server: restart server แล้วงานหยุดพร้อมกัน (รันซ้ำได้ เพราะ
+  script upsert)
+- exit code ของ script: `0` สำเร็จ · `1` ล้มเหลว · `2` ยกเลิก (`IMPORT_EXIT_CODES`)
 
 ### 2.4 Refresh site cache (**เพิ่ม**)
 
 - `track.spec.ts` รันนอก process ของ Next จึงเรียก `updateTag` ไม่ได้ (script
   เตือนไว้เองว่า server จะเสิร์ฟ path เก่าจนกว่า `cacheLife("hours")` หมด) หลัง import
   หน้า public จะยังไม่ เห็น episode/track ใหม่ได้หลายชั่วโมง
-- ปุ่มเรียก `refreshSeasonCache(seasonId)`: `updateTag` ของ `seasons/list`,
+- import จากหน้า ctrl ล้าง cache เองเมื่องานจบ (§2.3) ปุ่มนี้มีไว้หลังรันจาก terminal
+- ปุ่มเรียก `refreshSeasonCache(seasonId)` (`expireSeasonCaches` ใน
+  `@/actions/contents/cache.ts` ใช้ร่วมกับ import): `updateTag` ของ `seasons/list`,
   `seasons/{id}`, `seasons/{id}/episodes`, `contents/{contentId}/episodes`,
   `episodes/{eid}` และ `tracks/{tid}` ทุกตัวใน season
 
@@ -124,7 +143,7 @@ bun tests/track.spec.ts --season <seasonId> [--remux] [--force]
 | แก้                             | ผล                                                                                                                                                                                         |
 | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Kind / Season no.               | โฟลเดอร์ภาพ (`seasonArtDirectory`) เปลี่ยน: ภาพเดิมยังใช้ได้ (DB เก็บ path เต็ม) แต่ import ครั้งหน้าเขียนลงโฟลเดอร์ใหม่ · ต้องผ่าน unique (content, seasonNo) + `seasons_season_no_check` |
-| เพิ่ม source (dub ใหม่)         | กรณีปกติ: บันทึกแล้วรัน Import command                                                                                                                                                     |
+| เพิ่ม source (dub ใหม่)         | กรณีปกติ: บันทึกแล้วกด Import tracks                                                                                                                                                       |
 | ลบ source                       | track ภาษานั้นที่ import แล้ว**ยังอยู่**และเล่นได้ (track ไม่ผูกกับ sources) → เตือน                                                                                                       |
 | เปลี่ยน path ของ primary source | ตรวจซ้ำกับ season อื่นแบบ `createSeason` (ยกเว้นตัวเอง) · โฟลเดอร์ที่ยังไม่มีจะถูกสร้าง                                                                                                    |
 | Poster                          | ต้องทำ version ใน URL รูป (main §8.3) ไม่งั้นเห็นรูปเก่า                                                                                                                                   |
@@ -159,7 +178,7 @@ bun tests/track.spec.ts --season <seasonId> [--remux] [--force]
   mono)
 - ท้ายการ์ด: Copy path · Copy ID
 - ภาษาที่อยู่ใน `season.sources` แต่ไม่มี track: การ์ดเส้นประ, chip `Not imported`, path
-  ของ source และ ปุ่ม Import command (`ImportCommandModal` ใช้ร่วมกับหน้า season)
+  ของ source และ (เฉพาะ `root`) ปุ่ม **Import from the season** → หน้า season
 
 ### 3.3 Modal: Edit episode
 
@@ -217,9 +236,8 @@ bun tests/track.spec.ts --season <seasonId> [--remux] [--force]
 
 ## 4. Edge cases
 
-- season ที่ยังไม่ import: ตาราง episodes ว่าง → "No episodes yet. Run the import
-  command."
-  - ปุ่ม Import command
+- season ที่ยังไม่ import: ตาราง episodes ว่าง → `root`: "No episodes yet. Import tracks
+  to fill this table." · `admin`: "No episodes yet."
 - episode ไม่มี track (import ค้าง): ปุ่ม Capture thumbnail / Edit skips disabled +
   tooltip
 - episode ไม่มี thumbnail → placeholder ใน panel และตาราง

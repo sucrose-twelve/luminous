@@ -1,9 +1,12 @@
+import { FileImportIcon } from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
 import { AudioLinesSparkles } from "@keyline-icons/react/two-tone"
 
 import { CopyButton } from "@/app/(controls)/components/copy-button"
 import { DetailList, DetailRow } from "@/app/(controls)/components/detail-list"
-import { ImportCommandButton } from "@/app/(controls)/components/import-command"
+import { Link } from "@/components/link"
 import { Badge } from "@/components/ui/badge"
+import { buttonVariants } from "@/components/ui/button"
 import type { Locales } from "@/constants/enum"
 import { languageName } from "@/libs/language"
 import { formatTime } from "@/libs/time"
@@ -17,16 +20,20 @@ type Track = ControlEpisode["tracks"][number]
 /**
  * An episode's tracks as cards, original first: an episode has at most one track per language, so the few
  * there are get room for every detail. A language the season's sources list without a track here gets a dashed
- * `Not imported` card that opens the season's import command.
+ * `Not imported` card, which links root to the season's Import tracks.
+ *
+ * @param canImport - Whether the viewer may import (root only)
  */
 export function TrackCards({
   seasonId,
   tracks,
-  sources
+  sources,
+  canImport
 }: Readonly<{
   seasonId: string
   tracks: ControlEpisode["tracks"]
   sources: readonly Content.SeasonSource[]
+  canImport: boolean
 }>) {
   const missing = sources.filter(
     (source) => !tracks.some((track) => track.language === source.language)
@@ -42,7 +49,12 @@ export function TrackCards({
         <TrackCard key={track.id} track={track} />
       ))}
       {missing.map((source) => (
-        <MissingTrackCard key={source.language} seasonId={seasonId} source={source} />
+        <MissingTrackCard
+          key={source.language}
+          seasonId={seasonId}
+          source={source}
+          canImport={canImport}
+        />
       ))}
     </div>
   )
@@ -108,8 +120,9 @@ function TrackCard({ track }: Readonly<{ track: Track }>) {
 
 function MissingTrackCard({
   seasonId,
-  source
-}: Readonly<{ seasonId: string; source: Content.SeasonSource }>) {
+  source,
+  canImport
+}: Readonly<{ seasonId: string; source: Content.SeasonSource; canImport: boolean }>) {
   return (
     <article className='flex flex-col overflow-hidden rounded-xl border border-dashed border-white/15'>
       <TrackPoster language={source.language} isDubbed={source.isDubbed} isMissing />
@@ -127,9 +140,20 @@ function MissingTrackCard({
         </div>
       </div>
 
-      <div className='mt-auto flex gap-2 border-t border-dashed border-white/10 px-4 py-3'>
-        <ImportCommandButton seasonId={seasonId} size='sm' />
-      </div>
+      {canImport ? (
+        <div className='mt-auto flex gap-2 border-t border-dashed border-white/10 px-4 py-3'>
+          <Link
+            href={`/ctrl/seasons/${seasonId}`}
+            className={buttonVariants({ variant: "outline", size: "sm" })}>
+            <HugeiconsIcon
+              icon={FileImportIcon}
+              strokeWidth={2}
+              data-icon='inline-start'
+            />
+            Import from the season
+          </Link>
+        </div>
+      ) : null}
     </article>
   )
 }

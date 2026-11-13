@@ -107,7 +107,8 @@ engineer:
   one season, or without `--season` every upcoming/airing season of a `--kind` content
   (default `anime_series`), from disk in one run: remux to fragmented MP4 if asked, write
   its episodes and tracks, then generate thumbnails and sprite sheets (`--force`
-  regenerates existing art). See
+  regenerates existing art). Root can also start it from the control panel (Import tracks
+  / Import ongoing). See
   [video-streaming.md](references/video-streaming.md#import-step-teststrackspects).
 
 ## Project notes

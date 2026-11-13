@@ -135,7 +135,7 @@
   โฟลเดอร์ของทุก source ที่ยังไม่มีจะถูกสร้าง (`createSourceFolder`; movie
   สร้างโฟลเดอร์ที่ `.mp4` จะอยู่) · path ที่มีอยู่แล้วต้องเป็นชนิดที่ถูก (series =
   โฟลเดอร์, movie = ไฟล์)
-- สำเร็จ → ไป `/ctrl/seasons/[newId]` ที่มีปุ่ม Import command (season-page §2.3)
+- สำเร็จ → ไป `/ctrl/seasons/[newId]` ที่มีปุ่ม Import tracks (season-page §2.3, `root`)
 
 ### 4.1 ลบ content (`root` เท่านั้น)
 

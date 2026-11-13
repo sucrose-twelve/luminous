@@ -5,7 +5,7 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import { useCallback, useTransition } from "react"
 import { toast } from "sonner"
 
-import { ImportCommandButton } from "@/app/(controls)/components/import-command"
+import { ImportButton } from "@/app/(controls)/components/import-modal"
 import {
   SeasonFormModal,
   type EditableSeason,
@@ -17,12 +17,16 @@ import { useOverlayState } from "@/hooks"
 import { refreshSeasonCache } from "../actions/update"
 
 /**
- * Edit season, Import command, and Refresh site cache, on the right of a season's title.
+ * Edit season, Import tracks (root only), and Refresh site cache, on the right of a season's title. An import
+ * from here refreshes the cache by itself; the button is for an import run from a terminal.
+ *
+ * @param canImport - Whether the viewer may import, which also means the page has an `ImportJobProvider`
  */
 export function SeasonActions({
   content,
-  season
-}: Readonly<{ content: SeasonParent; season: EditableSeason }>) {
+  season,
+  canImport
+}: Readonly<{ content: SeasonParent; season: EditableSeason; canImport: boolean }>) {
   const editModal = useOverlayState()
   const [isRefreshing, startRefresh] = useTransition()
 
@@ -45,7 +49,9 @@ export function SeasonActions({
         <HugeiconsIcon icon={RefreshIcon} strokeWidth={2} data-icon='inline-start' />
         Refresh site cache
       </Button>
-      <ImportCommandButton seasonId={season.id} />
+      {canImport ? (
+        <ImportButton target={{ type: "season", seasonId: season.id }} />
+      ) : null}
       <Button onClick={editModal.open}>
         <HugeiconsIcon icon={PencilEdit02Icon} strokeWidth={2} data-icon='inline-start' />
         Edit season

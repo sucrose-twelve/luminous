@@ -117,6 +117,16 @@ fails is logged and the run moves on; one with nothing on disk yet (no primary s
 folder, or no episode files) is skipped. The run ends with a count of imported, skipped,
 and failed seasons. Everything below happens per season.
 
+Root can run it from the control panel too: **Import tracks** on a season's page and
+**Import ongoing** on `/ctrl/seasons` (`@/actions/imports/`). `runner.ts` spawns the
+script as a child of the server, one run at a time, with `--cancel-file`: Cancel creates
+that file and the script stops at its next safe point (between seasons, remuxed files, the
+DB write, and episodes' art), so a remux is never cut off. The status card streams the log
+from `GET /api/imports` (SSE) and, once the run ends, expires the site cache of every
+season it touched (`refreshImportCache` → `expireSeasonCaches`). Exit codes:
+`IMPORT_EXIT_CODES` (`0` done, `1` failed, `2` cancelled). The job lives in the server's
+memory, so a restart ends it along with the run.
+
 One run does the whole season, in order: check ffmpeg/ffprobe and the art folder → scan
 `sources` → remux (`--remux`) → read every file → write episodes and tracks (one
 transaction) → art (next section). Any check that fails stops the run before the step that

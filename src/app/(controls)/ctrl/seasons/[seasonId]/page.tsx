@@ -2,12 +2,16 @@ import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { z } from "zod"
 
+import { readSessionAccount } from "@/actions/auth"
+import { readImportJob } from "@/actions/imports/read"
 import {
   ControlPage,
   PanelBody,
   TableCard
 } from "@/app/(controls)/components/control-page"
 import { ToggleFilter } from "@/app/(controls)/components/filter-bar"
+import { ImportJobProvider } from "@/app/(controls)/components/import-job"
+import { ImportStatusCard } from "@/app/(controls)/components/import-status-card"
 import { TablePager } from "@/app/(controls)/components/table-pager"
 import {
   AUDIO_LABELS,
@@ -46,8 +50,8 @@ export async function generateMetadata({
 }
 
 /**
- * A season: its details and sources in the side panel, its episodes in the table, and the import command that
- * fills that table.
+ * A season: its details and sources in the side panel, its episodes in the table, and for root, Import tracks,
+ * which fills that table, with the import's status card above it.
  */
 export default async function ControlSeason({
   params,
@@ -57,11 +61,14 @@ export default async function ControlSeason({
   if (!z.uuid().safeParse(seasonId).success) notFound()
 
   const query = queryValidator.parse(await searchParams)
-  const [detail, { data, ...page }] = await Promise.all([
+  const [detail, { data, ...page }, viewer] = await Promise.all([
     readControlSeason(seasonId),
-    readSeasonEpisodes(seasonId, query)
+    readSeasonEpisodes(seasonId, query),
+    readSessionAccount()
   ])
   if (!detail) notFound()
+
+  const canImport = viewer?.role === "root"
 
   const { season, content } = detail
   const name = seasonName(season)
@@ -73,7 +80,7 @@ export default async function ControlSeason({
   ).map((audio) => ({ value: audio, label: AUDIO_LABELS[audio] }))
   const isFiltered = query.kind !== null || query.audio !== null
 
-  return (
+  const view = (
     <ControlPage
       title={name}
       description={
@@ -100,6 +107,7 @@ export default async function ControlSeason({
             poster: season.poster,
             releasedOn: season.releasedOn
           }}
+          canImport={canImport}
         />
       }
       aside={
@@ -107,6 +115,7 @@ export default async function ControlSeason({
           <SeasonDetails season={detail} />
         </PanelBody>
       }>
+      {canImport ? <ImportStatusCard /> : null}
       <TableCard
         toolbar={
           <>
@@ -135,10 +144,18 @@ export default async function ControlSeason({
           empty={
             isFiltered
               ? "No episodes match these filters."
-              : "No episodes yet. Run the import command, then refresh the site cache."
+              : canImport
+                ? "No episodes yet. Import tracks to fill this table."
+                : "No episodes yet."
           }
         />
       </TableCard>
     </ControlPage>
+  )
+
+  return canImport ? (
+    <ImportJobProvider initial={await readImportJob()}>{view}</ImportJobProvider>
+  ) : (
+    view
   )
 }

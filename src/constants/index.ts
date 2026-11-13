@@ -1,6 +1,7 @@
 export * from "./browse"
 export * from "./content"
 export * from "./control"
+export * from "./import"
 export * from "./watch-history"
 
 export const APP_VERSION = "v0.1-beta"

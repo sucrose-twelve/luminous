@@ -26,3 +26,21 @@ export function formatDate(value: Date | string) {
 export function formatDateTime(value: Date) {
   return format(value, "PPpp")
 }
+
+/**
+ * How long something has run, from seconds up to hours, for the import status card.
+ *
+ * @example
+ * ```ts
+ * formatElapsed(192_000) // "3m 12s"
+ * ```
+ */
+export function formatElapsed(milliseconds: number) {
+  const seconds = Math.max(0, Math.floor(milliseconds / 1000))
+  const hours = Math.floor(seconds / 3600)
+  const minutes = Math.floor((seconds % 3600) / 60)
+
+  if (hours > 0) return `${hours}h ${minutes}m`
+  if (minutes > 0) return `${minutes}m ${seconds % 60}s`
+  return `${seconds}s`
+}

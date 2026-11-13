@@ -52,9 +52,9 @@ cache) ไฟล์ย่อยอ้างกลับมาเป็น `main 
 - อ่าน role จาก `resolveSession` (DB) เสมอ ไม่ใช้ role ใน token
 - ไม่ได้ sign-in หรือเป็น `user` → `notFound()` (ไม่บอกว่ามีหน้านี้) staff sign-in ผ่าน
   modal ของหน้า public ตามปกติ แล้ว §1.3 จะพาเข้า `/ctrl` เอง
-- `root` กับ `admin` ทำได้เท่ากันใน v1 (Q3) ในอนาคต action ที่จัดการไฟล์บน disk
-  (`node:fs`) จะเป็นของ `root` เท่านั้น จึงให้ guard รับรายการ role ได้
-  (`withRole(STAFF_ROLES, …)`)
+- `root` กับ `admin` ทำได้เท่ากัน (Q3) ยกเว้น action ที่ย้อนกลับไม่ได้หรือแก้ไฟล์บน disk
+  ซึ่งเป็นของ `root` เท่านั้น (`withRole(ROOT_ROLES, …)`): ลบ content และ import tracks
+  guard จึงรับรายการ role ได้ (`withRole(STAFF_ROLES, …)`)
 
 ### 1.2 ตรวจที่ไหน — layout อย่างเดียวไม่พอ
 
@@ -315,7 +315,7 @@ optimize แล้วตาม max-age นั้น ถ่าย thumbnail ใ�
 2. ของใช้ร่วม: data-table, sort head, pager, detail panel, copy button
 3. `/ctrl/accounts` (ง่ายสุด ใช้ทดสอบของใช้ร่วม)
 4. `/ctrl/contents` + modal content → `/ctrl/contents/[contentId]` + modal season
-5. `/ctrl/seasons` → `/ctrl/seasons/[seasonId]` (+ import command, refresh cache)
+5. `/ctrl/seasons` → `/ctrl/seasons/[seasonId]` (+ import tracks, refresh cache)
 6. หน้า episode: edit → skip editor → thumbnail (ต้องย้าย ffmpeg helper ก่อน)
 7. ลบ lab import ทั้งสอง · `bunx prettier --write` · `bun run build`
 
@@ -325,12 +325,12 @@ optimize แล้วตาม max-age นั้น ถ่าย thumbnail ใ�
 | --- | ----------------------------- | -------------------------------------------------------------------------------------------------------------- |
 | Q1  | route group แทน rewrites      | ใช้ `(controls)/ctrl`                                                                                          |
 | Q2  | breakpoint                    | 1440px ตามเดิม                                                                                                 |
-| Q3  | `root` vs `admin`             | ตอนนี้เท่ากัน · อนาคต action ที่จัดการไฟล์บน disk (`node:fs`) เป็นของ root                                     |
+| Q3  | `root` vs `admin`             | เท่ากัน ยกเว้น action ที่ย้อนกลับไม่ได้หรือแก้ไฟล์บน disk: ลบ content และ import tracks เป็นของ `root`         |
 | Q4  | ปุ่ม settings ใน header       | ยังไม่ใส่                                                                                                      |
 | Q5  | search                        | ไป `/ctrl/seasons` เสมอ                                                                                        |
 | Q6  | toast                         | **เพิ่ม** (`sonner`)                                                                                           |
 | Q7  | ลบ content / season / episode | content: `root` เท่านั้น, hard delete ทั้ง DB และ `sourceDir` (content-page §4.1) · season / episode: ยังไม่มี |
-| Q8  | import                        | copy คำสั่งพอ · **ยกเลิก** queue                                                                               |
+| Q8  | import                        | กดจากหน้า ctrl (`root`): รัน script เป็น child process ทีละงาน + การ์ดสถานะ · ไม่มี queue (season-page §2.3)   |
 | Q9  | สี chip                       | โทน soft `bg-*-500/15 text-*-300`                                                                              |
 | Q10 | version ใน URL รูป            | **ไม่ทำ** ยอมรับ cache 1–2 วัน                                                                                 |
 | Q11 | ไอคอนหัวตารางตอนยังไม่ sort   | `ArrowDownUp` สี muted                                                                                         |
@@ -366,8 +366,9 @@ optimize แล้วตาม max-age นั้น ถ่าย thumbnail ใ�
   ของหน้า episode (ใช้ที่เดียว) · `readWatchEpisode` ติด tag `contents/{id}` +
   `seasons/{id}` ตาม §8.2★ · `GENRE_LABELS` อยู่ `@/constants/data/genres`
 - **ตาราง seasons**: ภาษาเสียงเป็น chip ใต้ชื่อ season แทนคอลัมน์ Audio แยก
-- **Import command** เป็น modal (ไม่ใช่ popover) · **skip editor** แสดง skip อื่นบนแถบ
-  timeline แยกเหนือ slider · **capture thumbnail** มีปุ่มเลื่อน −1s / −0.1s / +0.1s / +1s
+- **Import tracks** เป็น modal (ไม่ใช่ popover) และรันบน server ได้เลย (season-page §2.3)
+  · **skip editor** แสดง skip อื่นบนแถบ timeline แยกเหนือ slider · **capture thumbnail**
+  มีปุ่มเลื่อน −1s / −0.1s / +0.1s / +1s
 - **ลบแล้ว**: `(labs)/import-content`, `(labs)/import-season` และ `readContentOptions`
   ที่ใช้แค่ใน lab
 - **เจอระหว่างทาง (ของเดิม ยังไม่แก้)**: `/error-boundary` ใช้ `@/components/link`

@@ -4,6 +4,7 @@ import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { z } from "zod"
 
+import { readSessionAccount } from "@/actions/auth"
 import {
   ControlPage,
   PanelBody,
@@ -61,7 +62,10 @@ export default async function ControlEpisode({ params }: EpisodeParams) {
   const ids = await parseParams(params)
   if (!ids) notFound()
 
-  const detail = await readControlEpisode(ids.seasonId, ids.episodeId)
+  const [detail, viewer] = await Promise.all([
+    readControlEpisode(ids.seasonId, ids.episodeId),
+    readSessionAccount()
+  ])
   if (!detail) notFound()
 
   const { episode, season, content, tracks } = detail
@@ -134,7 +138,12 @@ export default async function ControlEpisode({ params }: EpisodeParams) {
             ) : null}
           </div>
         }>
-        <TrackCards seasonId={season.id} tracks={tracks} sources={season.sources} />
+        <TrackCards
+          seasonId={season.id}
+          tracks={tracks}
+          sources={season.sources}
+          canImport={viewer?.role === "root"}
+        />
       </TableCard>
     </ControlPage>
   )

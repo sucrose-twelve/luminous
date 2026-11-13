@@ -107,8 +107,15 @@ A remux only changes the container; it can't fix a codec the browser can't decod
 ### Import step: `tests/track.spec.ts`
 
 ```bash
-bun tests/track.spec.ts --season <seasonId> [--remux] [--force]
+bun tests/track.spec.ts [--season <seasonId> | --kind <kind>] [--remux] [--force]
 ```
+
+`--season` imports that one season, whatever its status. Without it, the script imports
+every `upcoming` or `airing` season whose content has `kind` = `--kind` (default
+`anime_series`), one after another by content title, then release date. A season that
+fails is logged and the run moves on; one with nothing on disk yet (no primary source
+folder, or no episode files) is skipped. The run ends with a count of imported, skipped,
+and failed seasons. Everything below happens per season.
 
 One run does the whole season, in order: check ffmpeg/ffprobe and the art folder → scan
 `sources` → remux (`--remux`) → read every file → write episodes and tracks (one

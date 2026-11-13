@@ -1,14 +1,19 @@
 # Track import (`tests/track.spec.ts`)
 
-สคริปต์ Bun สำหรับนำเข้าวิดีโอของซีซันหนึ่งจากดิสก์เข้า DB ในการรันครั้งเดียว: รีมักซ์เป็น fragmented MP4 (ถ้าสั่ง), เขียน `episodes` กับ `tracks`
+สคริปต์ Bun สำหรับนำเข้าวิดีโอของซีซันจากดิสก์เข้า DB ในการรันครั้งเดียว: รีมักซ์เป็น fragmented MP4 (ถ้าสั่ง), เขียน `episodes` กับ `tracks`
 แล้วสร้างภาพตัวอย่าง (thumbnail) และ sprite sheet ของทุกตอน
 
 รันจาก root ของ repo:
 
 ```bash
-bun tests/track.spec.ts --season 019a2b3c-…
+bun tests/track.spec.ts
+bun tests/track.spec.ts --kind tv_series
 bun tests/track.spec.ts --season 019a2b3c-… --remux --force
 ```
+
+ใส่ `--season` จะนำเข้าซีซันนั้นซีซันเดียว ไม่ว่า status จะเป็นอะไร ถ้าไม่ใส่ จะนำเข้าทุกซีซันที่ `status` เป็น `upcoming` หรือ `airing` ของ content
+ที่ `kind` ตรงกับ `--kind` (ค่าเริ่มต้น `anime_series`) ทีละซีซันตามชื่อ content แล้วตามวันที่ออกฉาย ซีซันที่ล้มเหลวจะ log ไว้แล้วไปต่อซีซันถัดไป
+ส่วนซีซันที่ยังไม่มีไฟล์บนดิสก์ (ไม่มีโฟลเดอร์ของ source หลัก หรือไม่มีไฟล์ตอน) จะถูกข้าม ตอนจบจะสรุปจำนวนที่นำเข้า ข้าม และล้มเหลว
 
 ซีซันต้องถูกสร้างไว้ก่อนแล้ว (ปุ่ม New season ในหน้า content ของ control panel `/ctrl/contents/[contentId]`) สคริปต์จะอ่านว่าไฟล์อยู่ที่ไหนจาก `seasons.sources`
 
@@ -16,7 +21,8 @@ bun tests/track.spec.ts --season 019a2b3c-… --remux --force
 
 | Flag | ค่า | ความหมาย |
 |---|---|---|
-| `--season` | UUID | ID ของซีซันที่จะนำเข้า (จำเป็น) |
+| `--season` | UUID | ID ของซีซันที่จะนำเข้า ไม่ใส่ = ทุกซีซันที่ `upcoming` / `airing` |
+| `--kind` | `contents.kind` | ชนิด content ของซีซันที่จะนำเข้าเมื่อไม่ใส่ `--season` (ค่าเริ่มต้น `anime_series`) ใส่คู่กับ `--season` จะไม่มีผล |
 | `--remux` | | แปลงไฟล์ที่ยังไม่ใช่ fragmented MP4 ให้เป็น fragmented MP4 (stream copy เร็วมาก), เข้ารหัสเสียงที่ไม่ใช่ AAC/Opus เป็น AAC และเปลี่ยน tag ของ HEVC เป็น `hvc1` ถ้าไม่ใส่ ไฟล์ต้องเป็น fragmented MP4 อยู่แล้ว |
 | `--force` | | สร้าง thumbnail และ sprite sheet ใหม่แม้มีไฟล์อยู่แล้ว |
 
@@ -105,7 +111,7 @@ bun tests/track.spec.ts --season 019a2b3c-… --remux --force
 |---|---|
 | `tests/track.spec.ts` | Entry: อ่าน argument, โหลดซีซัน และสั่งแต่ละขั้นตอนตามลำดับ |
 | `tracks/validator.zod.ts` | Zod schema ของ argument (`argsValidator`) |
-| `tracks/constants.ts` | ค่าที่ปรับได้: รูปแบบชื่อไฟล์, codec ที่ copy ได้, ขนาดภาพ, ช่วงของ sprite, ค่าเผื่อความยาวตอนรีมักซ์ |
+| `tracks/constants.ts` | ค่าที่ปรับได้: status ของซีซันที่นำเข้าเมื่อไม่ใส่ `--season`, รูปแบบชื่อไฟล์, codec ที่ copy ได้, ขนาดภาพ, ช่วงของ sprite, ค่าเผื่อความยาวตอนรีมักซ์ |
 | `tracks/source.ts` | หาไฟล์ตอนของ source แต่ละอัน (`findSourceFiles`) |
 | `tracks/ffprobe.ts` | อ่านความยาวและ stream ของไฟล์ |
 | `tracks/ffmpeg.ts` | เช็กเครื่องมือ, วางแผนและรันการรีมักซ์, ลบไฟล์สำรอง (เขียน WebP อยู่ `src/libs/ffmpeg.ts` ใช้ร่วมกับ control panel) |

@@ -3,7 +3,7 @@ import { setTimeout } from "node:timers/promises"
 import path from "path"
 import { parseArgs } from "util"
 
-import { eq, sql } from "drizzle-orm"
+import { and, asc, eq, inArray, sql } from "drizzle-orm"
 import { groupBy, isEqual } from "es-toolkit"
 import { z } from "zod"
 
@@ -12,6 +12,7 @@ import { writeThumbnail } from "@/libs/ffmpeg"
 import { COLOR, logger } from "@/libs/logger"
 import { artTrack, primarySource, seasonArtDirectory } from "@/libs/media"
 
+import { ONGOING_STATUSES } from "./tracks/constants"
 import {
   missingTools,
   planRemux,
@@ -31,7 +32,10 @@ type Season = {
   kind: Content.SeasonKind
   name: string
   sources: Content.SeasonSource[]
+  artDirectory: string
 }
+
+type SeasonRow = Awaited<ReturnType<typeof findSeasons>>[number]
 
 type SourceFiles = Content.SeasonSource & { files: EpisodeFile[] }
 
@@ -51,7 +55,13 @@ type ImportedEpisode = {
 }
 
 /**
- * Logs every problem, then stops the run through `main`'s catch.
+ * A season with nothing on disk to import yet: it stops a `--season` run, but a run over every ongoing season
+ * only skips it, since an upcoming season often has no files.
+ */
+class NotOnDiskError extends Error {}
+
+/**
+ * Logs every problem, then stops the season's import through the catch in `main`.
  */
 function stop(problems: string[], summary: string): never {
   problems.forEach((problem) => logger(`⛔ ${problem}`))
@@ -60,7 +70,7 @@ function stop(problems: string[], summary: string): never {
 
 /**
  * Finds the files of every source. A dub that isn't on disk yet is skipped, unless it's the primary source
- * (`primarySource`: the original, or the first dub when there's none): a missing primary source stops the run, and
+ * (`primarySource`: the original, or the first dub when there's none): a missing primary source stops the season, and
  * so do two files of one source with the same episode number (`14.mp4` and `14 - SP1.mp4`).
  */
 async function scanSources(season: Season) {
@@ -84,7 +94,7 @@ async function scanSources(season: Season) {
     } else if (source !== primary) {
       logger(`⚠️ Skipped the ${source.language} dub: ${source.pathname} not found`)
     } else {
-      throw new Error(
+      throw new NotOnDiskError(
         `The ${source.isDubbed ? "dub" : "original"} source of ${season.name} is not on disk: ${source.pathname}`
       )
     }
@@ -100,7 +110,7 @@ async function scanSources(season: Season) {
 }
 
 /**
- * Checks every file before remuxing any, so a file that needs a video re-encode stops the run while the library
+ * Checks every file before remuxing any, so a file that needs a video re-encode stops the season while the library
  * is still untouched. Then remuxes the files that need it, one at a time.
  */
 async function remuxSources(scanned: SourceFiles[]) {
@@ -154,7 +164,7 @@ async function readSourceTracks(scanned: SourceFiles[]) {
   }
 
   if (tracks.length === 0) {
-    throw new Error(
+    throw new NotOnDiskError(
       `No episode files (01.mp4, 02.mp4, …) in ${scanned.map((source) => source.pathname).join(", ")}`
     )
   }
@@ -315,52 +325,105 @@ async function generateArt(
 }
 
 /**
- * Loads the season and checks what the run needs before anything on disk or in the DB changes.
+ * Finds the seasons to import: the one `--season` names (whatever its status or kind), otherwise every
+ * upcoming or airing season of a `--kind` content, by content title, then release date.
  */
-async function loadSeason({
-  season: seasonId
-}: ArgsValidator): Promise<Season & { artDirectory: string }> {
-  const missing = missingTools()
-  if (missing.length > 0)
-    stop(
-      missing.map((tool) => `${tool} is not in the PATH`),
-      "Install ffmpeg first"
-    )
-
-  const [row] = await db
+async function findSeasons({ season: seasonId, kind }: ArgsValidator) {
+  const rows = await db
     .select({
+      id: schema.seasons.id,
       kind: schema.seasons.kind,
       seasonNo: schema.seasons.seasonNo,
       title: schema.seasons.title,
       sources: schema.seasons.sources,
+      contentTitle: schema.contents.title,
       sourceDir: schema.contents.sourceDir
     })
     .from(schema.seasons)
     .innerJoin(schema.contents, eq(schema.seasons.contentId, schema.contents.id))
-    .where(eq(schema.seasons.id, seasonId))
-    .limit(1)
+    .where(
+      seasonId
+        ? eq(schema.seasons.id, seasonId)
+        : and(
+            eq(schema.contents.kind, kind),
+            inArray(schema.seasons.status, ONGOING_STATUSES)
+          )
+    )
+    .orderBy(asc(schema.contents.title), asc(schema.seasons.releasedOn))
 
-  if (!row) throw new Error(`Season ${seasonId} not found`)
+  if (seasonId && rows.length === 0) throw new Error(`Season ${seasonId} not found`)
 
-  const name = row.title ?? (row.seasonNo === null ? row.kind : `season ${row.seasonNo}`)
+  return rows
+}
+
+/**
+ * Names the season in the log: its content's title, then its own title or kind and number.
+ */
+function seasonName(row: SeasonRow) {
+  return `${row.contentTitle} ${row.title ?? (row.seasonNo === null ? row.kind : `season ${row.seasonNo}`)}`
+}
+
+/**
+ * Imports one season: scans its sources, remuxes them if asked, writes its episodes and tracks, then makes their
+ * art. Deletes the season's remux backups last, so a failure in any step leaves every original in `.original/`
+ * to recover from.
+ */
+async function importSeason(row: SeasonRow, { remux, force }: ArgsValidator) {
+  const startedAt = new Date()
+  const name = seasonName(row)
+
   const artDirectory = seasonArtDirectory(row.sourceDir, row)
   if (!artDirectory)
     throw new Error(
       `${name} has no source inside ${row.sourceDir} for its art folder (or a season has no season number)`
     )
 
-  return { id: seasonId, kind: row.kind, name, sources: row.sources, artDirectory }
+  const season: Season = {
+    id: row.id,
+    kind: row.kind,
+    name,
+    sources: row.sources,
+    artDirectory
+  }
+
+  const scanned = await scanSources(season)
+  if (remux) await remuxSources(scanned)
+
+  const tracks = await readSourceTracks(scanned)
+  const episodes = await importTracks(season.id, tracks)
+  logger(
+    `📥 Imported ${episodes.length} episodes and ${tracks.length} tracks for ${name}`
+  )
+
+  await generateArt(episodes, tracks, season.artDirectory, force)
+
+  /**
+   * Covers the whole season, so backups left by an earlier run that stopped midway go too, now that their files
+   * checked out.
+   */
+  if (remux) {
+    const removed = await removeBackups(tracks.map((track) => track.path))
+    if (removed > 0) logger(`🧹 Deleted ${removed} original(s) from .original/`)
+  }
+
+  logger(`✅ Done with ${name}`, startedAt)
 }
 
 /**
- * Imports one season from the sources listed on it (`seasons.sources`): remuxes its files if asked, writes its
+ * Imports seasons from the sources listed on them (`seasons.sources`): remuxes their files if asked, writes their
  * episodes and tracks, then creates each episode's thumbnail and sprite sheet.
  *
  * Usage (from the repo root):
  * ```bash
- * bun tests/track.spec.ts --season 019a2b3c-…
+ * bun tests/track.spec.ts
+ * bun tests/track.spec.ts --kind tv_series
  * bun tests/track.spec.ts --season 019a2b3c-… --remux --force
  * ```
+ *
+ * `--season` imports that season, whatever its status. Without it, every `upcoming` or `airing` season of a
+ * `--kind` content (`contents.kind`, default `anime_series`) is imported, one after another: a season that fails
+ * is logged and the run goes on to the next, and one with no files on disk yet (its primary source folder or
+ * its episode files) is skipped. `--kind` is ignored with `--season`.
  *
  * Each source gives its language and whether it's dubbed: only `isDubbed` says so, never the folder name. A
  * season may have only dubs (no `isDubbed: false` source). A series source is a folder, a movie source the file:
@@ -373,13 +436,13 @@ async function loadSeason({
  * In a folder, only files named like `01.mp4`, `14 - SP1.mp4` or `14 - OVA1.mp4` are imported: the leading
  * number becomes `episodeNo`. `01.mp4` is a `regular` episode titled `01`; `14 - SP1.mp4` is a `special` titled
  * `SP - 01` and `14 - OVA1.mp4` an `ova` titled `OVA - 01`. A source that isn't on disk yet is skipped, except the
- * primary one (the original, or the first dub without one), which stops the run. A dub with fewer episodes than
+ * primary one (the original, or the first dub without one), which stops the season. A dub with fewer episodes than
  * the original simply gives those episodes one more track.
  *
  * - `--remux` turns files that aren't fragmented MP4 into one (stream copy, fast), re-encodes audio other than
  *   AAC/Opus to AAC, and re-tags HEVC as `hvc1`. Each replaced file is kept in `<folder>/.original/` and deleted
- *   only when the whole run has succeeded; if any step fails, it stays there to recover from. Files that
- *   need a video re-encode (Hi10P, MPEG-2, …) stop the run before anything is changed. Without it, files must
+ *   only when the season's whole import has succeeded; if any step fails, it stays there to recover from. Files that
+ *   need a video re-encode (Hi10P, MPEG-2, …) stop the season before anything is changed. Without it, files must
  *   already be fragmented MP4.
  * - Art goes to the season's art folder in the content's `sourceDir` (`seasonArtDirectory`, e.g.
  *   `<CONTENTS_SOURCE_DIR>/Frieren/Thumbnails/1/`, `<CONTENTS_SOURCE_DIR>/SAO/Thumbnails/Ordinal Scale/`, or
@@ -396,6 +459,7 @@ async function main() {
   const { values } = parseArgs({
     options: {
       season: { type: "string" },
+      kind: { type: "string" },
       remux: { type: "boolean" },
       force: { type: "boolean" }
     }
@@ -409,31 +473,46 @@ async function main() {
     return
   }
 
-  const season = await loadSeason(parsed.data)
-  const scanned = await scanSources(season)
-  if (parsed.data.remux) await remuxSources(scanned)
+  const missing = missingTools()
+  if (missing.length > 0)
+    stop(
+      missing.map((tool) => `${tool} is not in the PATH`),
+      "Install ffmpeg first"
+    )
 
-  const tracks = await readSourceTracks(scanned)
-  const episodes = await importTracks(season.id, tracks)
-  logger(
-    `📥 Imported ${episodes.length} episodes and ${tracks.length} tracks for ${season.name}`
-  )
-
-  await generateArt(episodes, tracks, season.artDirectory, parsed.data.force)
-
-  /**
-   * Last, so a failure in any step above leaves every original in `.original/` to recover from. Covers the whole
-   * season, so backups left by an earlier run that stopped midway go too, now that their files checked out.
-   */
-  if (parsed.data.remux) {
-    const removed = await removeBackups(tracks.map((track) => track.path))
-    if (removed > 0) logger(`🧹 Deleted ${removed} original(s) from .original/`)
+  const rows = await findSeasons(parsed.data)
+  if (rows.length === 0) {
+    logger(`⚠️ No upcoming or airing ${parsed.data.kind} seasons to import`)
+    return
   }
 
-  logger(`🎉 Done with ${season.name}`, startedAt)
+  let imported = 0
+  const skipped: string[] = []
+  const failed: string[] = []
+
+  for (const row of rows) {
+    try {
+      await importSeason(row, parsed.data)
+      imported++
+    } catch (error) {
+      if (error instanceof NotOnDiskError && !parsed.data.season) {
+        skipped.push(seasonName(row))
+        logger(`⏭️ Skipped ${seasonName(row)}: ${error.message}`)
+      } else {
+        failed.push(seasonName(row))
+        logger(`❌ ${seasonName(row)}: ${errorMessage(error)}`)
+      }
+    }
+  }
+
   logger(
-    '⚠️ A running server serves cached art paths until `cacheLife("hours")` expires or it restarts'
+    `🎉 Imported ${imported}/${rows.length} season(s)${skipped.length > 0 ? `, skipped ${skipped.length} with no files` : ""}${failed.length > 0 ? `, failed: ${failed.join(", ")}` : ""}`,
+    startedAt
   )
+  if (imported > 0)
+    logger(
+      '⚠️ A running server serves cached art paths until `cacheLife("hours")` expires or it restarts'
+    )
 }
 
 main()

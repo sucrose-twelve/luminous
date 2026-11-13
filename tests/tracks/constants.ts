@@ -13,6 +13,11 @@ export const EPISODE_FILE_TAGS: Record<string, Content.EpisodeKind> = {
 }
 
 /**
+ * The seasons a run without `--season` imports: the ones still getting new episodes.
+ */
+export const ONGOING_STATUSES: Content.SeasonStatus[] = ["upcoming", "airing"]
+
+/**
  * `--remux` moves each replaced file into this folder, next to the new one. Never scanned: only files directly
  * inside a source folder are read.
  */

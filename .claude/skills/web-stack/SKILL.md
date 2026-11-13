@@ -103,9 +103,11 @@ engineer:
   [database.md](references/database.md).
 - `bun tests/account.spec.ts --email … --password … [--role admin] [--username …]` —
   create an account.
-- `bun tests/track.spec.ts --season <id> [--remux] [--force]` — import a season from disk
-  in one run: remux to fragmented MP4 if asked, write its episodes and tracks, then
-  generate thumbnails and sprite sheets (`--force` regenerates existing art). See
+- `bun tests/track.spec.ts [--season <id> | --kind <kind>] [--remux] [--force]` — import
+  one season, or without `--season` every upcoming/airing season of a `--kind` content
+  (default `anime_series`), from disk in one run: remux to fragmented MP4 if asked, write
+  its episodes and tracks, then generate thumbnails and sprite sheets (`--force`
+  regenerates existing art). See
   [video-streaming.md](references/video-streaming.md#import-step-teststrackspects).
 
 ## Project notes
